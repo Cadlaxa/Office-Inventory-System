@@ -36,7 +36,7 @@ public partial class MainViewModel: ObservableObject {
         var items = _repository.GetAllItems();
 
         foreach(var item in items) {
-            item.FinalStock = item.InitialStock + item.StockIn - item.StockOut;
+            item.Final_Stock = item.InitialStock + item.Stock_In - item.Stock_Out;
         }
         InventoryList = new ObservableCollection < InventoryItem > (items);
 
@@ -54,9 +54,9 @@ public partial class MainViewModel: ObservableObject {
                 ManufacturerSupplier = string.Empty,
                 AsOfDate = System.DateTime.Now.ToString("dd-MMM-yy"),
                 InitialStock = 0,
-                StockIn = 0,
-                StockOut = 0,
-                FinalStock = 0,
+                Stock_In = 0,
+                Stock_Out = 0,
+                Final_Stock = 0,
                 Location = string.Empty,
                 Remarks = string.Empty
         };

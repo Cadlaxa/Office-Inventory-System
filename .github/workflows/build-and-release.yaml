@@ -48,18 +48,18 @@ jobs:
       uses: vimtor/action-zip@v1.2
       with:
         files: ./publish_output/
-        dest: MazeSolver-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }}
+        dest: OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }}
 
     - name: Archive Release (Mac/Linux)
       if: matrix.os != 'windows-latest'
-      run: tar -czvf MazeSolver-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }} -C ./publish_output .
+      run: tar -czvf OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }} -C ./publish_output .
 
     # Temporarily upload the zipped files to GitHub so Job 2 can grab them
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: app-binaries-${{ matrix.rid }}
-        path: MazeSolver-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }}
+        path: OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }}
 
 
   # ==========================================
@@ -88,10 +88,10 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: v1.0.${{ github.run_number }}
-        name: Maze Solver Release v1.0.${{ github.run_number }}
+        name: Office Supplies Inventory Release v1.0.${{ github.run_number }}
         body: |
           🚀 Automatically generated release for version 1.0.${{ github.run_number }}.
-          
+
           **Important Note for macOS Users:** If you see an error that says "This app is damaged and can't be opened," please follow these steps:
           
           1. Open a terminal.

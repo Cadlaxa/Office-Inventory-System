@@ -8,12 +8,11 @@ namespace Office_Supplies_Inventory {
         public string ManufacturerSupplier { get; set; } = string.Empty;
         public string AsOfDate { get; set; } = string.Empty;
         public int InitialStock { get; set; } 
-        public int StockIn { get; set; }
-        public int StockOut { get; set; }
-        public int FinalStock { get; set; }
+        public int Stock_In { get; set; }
+        public int Stock_Out { get; set; }
+        public int Final_Stock { get; set; }
         public string Location { get; set; } = string.Empty;
         public string Remarks { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
     }
 
     // Model for the STOCK IN/OUT MONITORING table

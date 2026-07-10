@@ -16,7 +16,7 @@ public partial class App : Application {
     }
 
     public override async void OnFrameworkInitializationCompleted() {
-        var mgr = new UpdateManager(new GithubSource("https://github.com/Cadlaxa/Office-Inventory-System", null, false));
+        /*var mgr = new UpdateManager(new GithubSource("https://github.com/Cadlaxa/Office-Inventory-System", null, false));
         var newVersion = await mgr.CheckForUpdatesAsync();
 
         if (newVersion != null) {
@@ -25,7 +25,7 @@ public partial class App : Application {
                 await mgr.DownloadUpdatesAsync(newVersion);
                 mgr.ApplyUpdatesAndRestart(newVersion);
             }
-        }
+        }*/
 
         base.OnFrameworkInitializationCompleted();
     }

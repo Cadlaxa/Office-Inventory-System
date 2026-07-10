@@ -47,9 +47,9 @@
                             <DataGridTextColumn Header="MANUFACTURER / SUPPLIER" Binding="{Binding ManufacturerSupplier}" />
                             <DataGridTextColumn Header="AS OF" Binding="{Binding AsOfDate}" />
                             <DataGridTextColumn Header="INITIAL STOCK" Binding="{Binding InitialStock}" />
-                            <DataGridTextColumn Header="IN" Binding="{Binding StockIn}" />
-                            <DataGridTextColumn Header="OUT" Binding="{Binding StockOut}" />
-                            <DataGridTextColumn Header="FINAL STOCK" Binding="{Binding FinalStock}" FontWeight="Bold"/>
+                            <DataGridTextColumn Header="IN" Binding="{Binding Stock_In}" />
+                            <DataGridTextColumn Header="OUT" Binding="{Binding Stock_Out}" />
+                            <DataGridTextColumn Header="FINAL STOCK" Binding="{Binding Final_Stock}" FontWeight="Bold"/>
                             <DataGridTextColumn Header="LOCATION" Binding="{Binding Location}" />
                             <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
                         </DataGrid.Columns>
