@@ -15,17 +15,12 @@ public partial class App : Application {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override async void OnFrameworkInitializationCompleted() {
-        /*var mgr = new UpdateManager(new GithubSource("https://github.com/Cadlaxa/Office-Inventory-System", null, false));
-        var newVersion = await mgr.CheckForUpdatesAsync();
-
-        if (newVersion != null) {
-            var result = await ShowUpdateConfirmationDialog(newVersion.TargetFullRelease.Version.ToString());
-            if (result) {
-                await mgr.DownloadUpdatesAsync(newVersion);
-                mgr.ApplyUpdatesAndRestart(newVersion);
-            }
-        }*/
+    public override void OnFrameworkInitializationCompleted() {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+            desktop.MainWindow = new MainWindow {
+                DataContext = new MainViewModel()
+            };
+        }
 
         base.OnFrameworkInitializationCompleted();
     }
