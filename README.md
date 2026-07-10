@@ -5,7 +5,8 @@ Simple offline inventory system build with Avalonia UI
 - [x] Simple CRUD functions
 - [x] Stock In/Out Panel
 - [x] Direct cell edit
-- [] Export Data
-- [] Import Data
-- [] App Icon
-- [] Revamp UI
+- [ ] Export Data
+- [ ] Import Data
+- [ ] App Icon
+- [ ] Revamp UI
+- [x] Cross Platform (Windows, Macos, Linux)
