@@ -27,7 +27,13 @@ public partial class MainViewModel: ObservableObject {
 
     public MainViewModel() {
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-        AppVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion ?? "1.0.0";
+        string ? path = assembly.Location;
+
+        if (!string.IsNullOrEmpty(path)) {
+            AppVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(path).ProductVersion ?? "1.0.0";
+        } else {
+            AppVersion = "1.0.0"; // Fallback for environments where location is unavailable
+        }
         LoadData();
     }
 
