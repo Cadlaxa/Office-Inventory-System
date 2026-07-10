@@ -13,6 +13,7 @@ namespace Office_Supplies_Inventory {
         public int Final_Stock { get; set; }
         public string Location { get; set; } = string.Empty;
         public string Remarks { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
     }
 
     // Model for the STOCK IN/OUT MONITORING table

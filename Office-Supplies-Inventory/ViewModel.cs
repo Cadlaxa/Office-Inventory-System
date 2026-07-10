@@ -64,7 +64,8 @@ public partial class MainViewModel: ObservableObject {
                 Stock_Out = 0,
                 Final_Stock = 0,
                 Location = string.Empty,
-                Remarks = string.Empty
+                Remarks = string.Empty,
+                Status = string.Empty
         };
 
         IsAddDialogVisible = true;
@@ -85,7 +86,6 @@ public partial class MainViewModel: ObservableObject {
         IsAddDialogVisible = false;
     }
 
-    // --- EXISTING COMMANDS ---
     [RelayCommand]
     private void DeleteSelectedItems(System.Collections.IList selectedItems) {
         // Check if nothing is selected

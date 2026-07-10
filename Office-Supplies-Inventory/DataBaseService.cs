@@ -28,9 +28,9 @@ public class InventoryRepository {
                 ManufacturerSupplier TEXT,
                 AsOfDate TEXT,
                 InitialStock INTEGER,
-                StockIn INTEGER,
-                StockOut INTEGER,
-                FinalStock INTEGER,
+                Stock_In INTEGER,
+                Stock_Out INTEGER,
+                Final_Stock INTEGER,
                 Location TEXT,
                 Remarks TEXT,
                 Status TEXT
@@ -106,8 +106,8 @@ public class InventoryRepository {
     public void AddItem(InventoryItem item) {
         try{
             using IDbConnection db = new SqliteConnection(_connectionString);
-            string sql = @"INSERT INTO InventoryRecords (ItemCode, Description, ManufacturerSupplier, AsOfDate, InitialStock, StockIn, StockOut, FinalStock, Location, Remarks, Status) 
-                           VALUES (@ItemCode, @Description, @ManufacturerSupplier, @AsOfDate, @InitialStock, @StockIn, @StockOut, @FinalStock, @Location, @Remarks, @Status)";
+            string sql = @"INSERT INTO InventoryRecords (ItemCode, Description, ManufacturerSupplier, AsOfDate, InitialStock, Stock_In, Stock_Out, Final_Stock, Location, Remarks, Status) 
+                           VALUES (@ItemCode, @Description, @ManufacturerSupplier, @AsOfDate, @InitialStock, @Stock_In, @Stock_Out, @Final_Stock, @Location, @Remarks, @Status)";
             db.Execute(sql, item);
             Log.Information("Successfully added item {ItemCode}.", item.ItemCode);
         }
@@ -125,9 +125,9 @@ public class InventoryRepository {
                                ManufacturerSupplier = @ManufacturerSupplier, 
                                AsOfDate = @AsOfDate,
                                InitialStock = @InitialStock,
-                               StockIn = @StockIn,
-                               StockOut = @StockOut,
-                               FinalStock = @FinalStock,
+                               Stock_In = @Stock_In,
+                               Stock_Out = @Stock_Out,
+                               Final_Stock = @Final_Stock,
                                Location = @Location, 
                                Remarks = @Remarks,
                                Status = @Status 
@@ -155,14 +155,14 @@ public class InventoryRepository {
         db.Execute(logSql, log);
 
         string updateCountsSql = log.TransactionType == "IN" 
-            ? "UPDATE InventoryRecords SET StockIn = StockIn + @Qty WHERE ItemCode = @ItemCode"
-            : "UPDATE InventoryRecords SET StockOut = StockOut + @Qty WHERE ItemCode = @ItemCode";
+            ? "UPDATE InventoryRecords SET Stock_In = Stock_In + @Qty WHERE ItemCode = @ItemCode"
+            : "UPDATE InventoryRecords SET Stock_Out = Stock_Out + @Qty WHERE ItemCode = @ItemCode";
             
         db.Execute(updateCountsSql, new { Qty = log.Quantity, ItemCode = log.ItemCode });
 
         string recalculateFinalSql = @"
             UPDATE InventoryRecords 
-            SET FinalStock = (InitialStock + StockIn - StockOut) 
+            SET Final_Stock = (InitialStock + Stock_In - Stock_Out) 
             WHERE ItemCode = @ItemCode";
             
         db.Execute(recalculateFinalSql, new { ItemCode = log.ItemCode });

@@ -52,6 +52,7 @@
                             <DataGridTextColumn Header="FINAL STOCK" Binding="{Binding Final_Stock}" FontWeight="Bold"/>
                             <DataGridTextColumn Header="LOCATION" Binding="{Binding Location}" />
                             <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
+                            <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" />
                         </DataGrid.Columns>
                     </DataGrid>
 
@@ -145,8 +146,8 @@
             
         </TabControl>
 
-        <Grid Background="{DynamicResource SystemControlBackgroundAltHighBrush}" IsVisible="{Binding IsAddDialogVisible}" ZIndex="100">
-            <Border Background="White" Width="450" Padding="25" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid Background="#91000000" IsVisible="{Binding IsAddDialogVisible}" ZIndex="100">
+            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" Width="450" Padding="25" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add New Supply Item" FontWeight="Bold" FontSize="20" Margin="0,0,0,10"/>
                     
@@ -181,8 +182,8 @@
             </Border>
         </Grid>
 
-        <Grid Background="{DynamicResource SystemRegionBrush}" IsVisible="{Binding IsStockOutDialogVisible}" ZIndex="100">
-            <Border Background="White" Width="400" Padding="25" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid Background="#91000000" IsVisible="{Binding IsStockOutDialogVisible}" ZIndex="100">
+            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" Width="400" Padding="25" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Log Supply Request (Stock Out)" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
                     
@@ -200,14 +201,14 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Command="{Binding CloseStockOutDialogCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,5,0"/>
-                        <Button Grid.Column="1" Content="💾 Log Request" Command="{Binding SaveStockOutCommand}" Background="#1976D2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="5,0,0,0"/>
+                        <Button Grid.Column="1" Content="💾 Log Request" Command="{Binding SaveStockOutCommand}" Background="#1976D2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="5,0,0,0" />
                     </Grid>
                 </StackPanel>
             </Border>
         </Grid>
 
         <Grid Background="{DynamicResource SystemRegionBrush}" IsVisible="{Binding IsStockInDialogVisible}" ZIndex="100">
-            <Border Background="White" Width="400" Padding="25" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" Width="400" Padding="25" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add Delivery (Stock In)" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
                     
