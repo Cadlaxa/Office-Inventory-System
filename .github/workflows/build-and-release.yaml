@@ -92,8 +92,16 @@ jobs:
         body: |
           🚀 Automatically generated release for version 1.0.${{ github.run_number }}.
           
-	macOS says "This app is damaged"
-        Open a terminal and run `xattr -rc /Applications/Office-Supplies-Inventory.app` Try opening it again.
+          **Important Note for macOS Users:** If you see an error that says "This app is damaged and can't be opened," please follow these steps:
+          
+          1. Open a terminal.
+          2. Run the following command: 
+             ```
+             xattr -rc /Applications/Office-Supplies-Inventory.app
+             ```
+          3. Try opening the app again.
+
+          This command removes the quarantine attribute that macOS applies to downloaded apps, which can sometimes cause this error.
 
           **Downloads available below:**
           * Windows (.zip)
