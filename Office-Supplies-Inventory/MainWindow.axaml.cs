@@ -2,12 +2,47 @@ using Avalonia.Controls;
 using Avalonia;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using System.IO;
+using System.Text.Json;
 namespace Office_Supplies_Inventory;
 
 public partial class MainWindow: Window {
+    private readonly string _settingsPath = "settings.json";
+    private AppSettings _currentSettings = new(); // Holds all active settings
     public MainWindow() {
         InitializeComponent();
         DataContext = new MainViewModel();
+        LoadSettings();
+    }
+
+    private void LoadSettings() {
+        try {
+            if (File.Exists(_settingsPath)) {
+                string json = File.ReadAllText(_settingsPath);
+                
+                // Deserialize the entire JSON object into our AppSettings class
+                var savedSettings = JsonSerializer.Deserialize<AppSettings>(json);
+                if (savedSettings != null) {
+                    _currentSettings = savedSettings;
+                }
+            }
+        } 
+        catch { 
+            // If it fails (e.g., corrupted file), _currentSettings remains at its defaults
+        }
+        ThemeToggle.IsChecked = _currentSettings.IsDarkMode;
+        ApplyTheme(_currentSettings.IsDarkMode);
+    }
+
+    private void SaveSettings() {
+        try {
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string json = JsonSerializer.Serialize(_currentSettings, options);
+            File.WriteAllText(_settingsPath, json);
+        } 
+        catch { 
+            // Ignore write errors
+        }
     }
 
     private void InventoryGrid_CellEditEnded(object ? sender, DataGridCellEditEndedEventArgs e) {
@@ -28,11 +63,24 @@ public partial class MainWindow: Window {
         }
     }
 
-    private void ThemeToggle_Toggled(object ? sender, RoutedEventArgs e) {
-        if (sender is ToggleSwitch toggle && Application.Current != null) {
-            Application.Current.RequestedThemeVariant = toggle.IsChecked == true ?
-                ThemeVariant.Dark :
+    private void ThemeToggle_Toggled(object? sender, RoutedEventArgs e) {
+        if (ThemeToggle != null) {
+            bool isDark = ThemeToggle.IsChecked == true;
+            _currentSettings.IsDarkMode = isDark;
+            ApplyTheme(isDark);
+            SaveSettings();
+        }
+    }
+
+    private void ApplyTheme(bool isDark) {
+        if (Application.Current != null) {
+            Application.Current.RequestedThemeVariant = isDark ? 
+                ThemeVariant.Dark : 
                 ThemeVariant.Light;
         }
+    }
+
+    public class AppSettings {
+        public bool IsDarkMode {get; set;} = false;
     }
 }

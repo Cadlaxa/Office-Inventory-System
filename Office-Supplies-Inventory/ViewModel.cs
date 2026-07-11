@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Office_Supplies_Inventory;
 
@@ -20,10 +23,25 @@ public partial class MainViewModel: ObservableObject {
 
     [ObservableProperty]
     private InventoryItem _newItemForm = new();
-    public ObservableCollection<InventoryItem> AllInventoryItems => InventoryList;
+
+    [ObservableProperty]
+    private ObservableCollection<InventoryItem> _allInventoryItems = new();
 
     [ObservableProperty]
     private string _appVersion = "1.0.0";
+
+    private List<InventoryItem> _fullInventoryList = new();
+    private List<StockTransactionLog> _fullTransactionLogs = new();
+
+    private string _searchQuery = string.Empty;
+    public string SearchQuery {
+        get => _searchQuery;
+        set {
+            if (SetProperty(ref _searchQuery, value)) {
+                FilterData();
+            }
+        }
+    }
 
     public MainViewModel() {
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -39,16 +57,53 @@ public partial class MainViewModel: ObservableObject {
 
     [RelayCommand]
     private void LoadData() {
+        // 1. Fetch Inventory
         var items = _repository.GetAllItems();
-
         foreach(var item in items) {
             item.Final_Stock = item.InitialStock + item.Stock_In - item.Stock_Out;
         }
-        InventoryList = new ObservableCollection < InventoryItem > (items);
-
-        // Fetch Transaction Logs
+        _fullInventoryList = items; 
+        AllInventoryItems = new ObservableCollection<InventoryItem>(items); 
+        
+        // 2. Fetch Transaction Logs
         var logs = _repository.GetTransactionLogs();
-        TransactionLogs = new ObservableCollection < StockTransactionLog > (logs);
+        _fullTransactionLogs = logs; // Save the raw logs
+
+        // 3. Apply active filters to BOTH lists to update the UI
+        FilterData(); 
+    }
+
+    private void FilterData() {
+        if (string.IsNullOrWhiteSpace(SearchQuery)) {
+            InventoryList = new ObservableCollection<InventoryItem>(_fullInventoryList);
+            TransactionLogs = new ObservableCollection<StockTransactionLog>(_fullTransactionLogs);
+            return;
+        }
+
+        var query = SearchQuery.ToLower();
+
+        // Filter Inventory
+        var filteredInventory = _fullInventoryList.Where(item => 
+            (item.ItemCode?.ToLower().Contains(query) == true) ||
+            (item.Description?.ToLower().Contains(query) == true) ||
+            (item.ManufacturerSupplier?.ToLower().Contains(query) == true) ||
+            (item.Location?.ToLower().Contains(query) == true) ||
+            (item.Remarks?.ToLower().Contains(query) == true)
+        ).ToList();
+        
+        InventoryList = new ObservableCollection<InventoryItem>(filteredInventory);
+
+        // Filter Transaction Logs
+        var filteredLogs = _fullTransactionLogs.Where(log => 
+            (log.ItemCode?.ToLower().Contains(query) == true) ||
+            (log.ItemDescription?.ToLower().Contains(query) == true) ||
+            (log.NameRequested?.ToLower().Contains(query) == true) ||
+            (log.TransactionType?.ToLower().Contains(query) == true) ||
+            (log.Date?.ToLower().Contains(query) == true) ||
+            (log.Remarks?.ToLower().Contains(query) == true)
+        ).ToList();
+
+        TransactionLogs = new ObservableCollection<StockTransactionLog>(filteredLogs);
     }
 
     [RelayCommand]
@@ -78,44 +133,50 @@ public partial class MainViewModel: ObservableObject {
 
     [RelayCommand]
     private void SaveNewItem() {
-        // Save the typed data to the database
-        _repository.AddItem(NewItemForm);
-
-        // Refresh the background grid and close the popup
-        LoadData();
-        IsAddDialogVisible = false;
+        try {
+            _repository.AddItem(NewItemForm);
+            LoadData();
+            IsAddDialogVisible = false;
+            ShowNotification("Item successfully added to inventory."); // Success Notification
+        } catch {
+            ShowNotification("Error: Could not add item.", true); // Error Notification
+        }
     }
 
     [RelayCommand]
     private void DeleteSelectedItems(System.Collections.IList selectedItems) {
-        // Check if nothing is selected
         if (selectedItems == null || selectedItems.Count == 0) return;
 
-        // Convert the selected items into a safe list we can loop through
-        var itemsToDelete = selectedItems.Cast < InventoryItem > ().ToList();
-
+        var itemsToDelete = selectedItems.Cast<InventoryItem>().ToList();
         foreach(var item in itemsToDelete) {
             _repository.DeleteItem(item.ItemCode);
         }
-
         LoadData();
+        ShowNotification($"{itemsToDelete.Count} item(s) deleted.");
     }
 
     [RelayCommand]
-    private void StockOut() {
-        if (SelectedItem == null) return;
+    private void SaveStockOut() {
+        try {
+            _repository.ProcessTransaction(StockOutForm);
+            LoadData();
+            IsStockOutDialogVisible = false;
+            ShowNotification("Stock out request logged successfully."); 
+        } catch {
+            ShowNotification("Error: Failed to log stock out.", true); 
+        }
+    }
 
-        // Simulate reading from a form where the admin types the employee's name and quantity
-        var log = new StockTransactionLog {
-            ItemCode = SelectedItem.ItemCode,
-                TransactionType = "OUT",
-                Quantity = 1,
-                NameRequested = "Employee Name",
-                Date = System.DateTime.Now.ToString("dd-MMM-yy")
-        };
-
-        _repository.ProcessTransaction(log);
-        LoadData();
+    [RelayCommand]
+    private void SaveStockIn() {
+        try {
+            _repository.ProcessTransaction(StockInForm);
+            LoadData(); 
+            IsStockInDialogVisible = false; // Close the dialog
+            ShowNotification("Delivery (Stock In) added successfully."); 
+        } catch {
+            ShowNotification("Error: Failed to add delivery.", true); 
+        }
     }
 
     [RelayCommand]
@@ -127,6 +188,7 @@ public partial class MainViewModel: ObservableObject {
             _repository.DeleteTransactionLog(log.TransactionId);
         }
         LoadData(); 
+        ShowNotification($"{logsToDelete.Count} log(s) deleted.");
     }
 
     // STOCK OUT FORM
@@ -154,13 +216,6 @@ public partial class MainViewModel: ObservableObject {
 
     [RelayCommand]
     private void CloseStockOutDialog() => IsStockOutDialogVisible = false;
-
-    [RelayCommand]
-    private void SaveStockOut() {
-        _repository.ProcessTransaction(StockOutForm);
-        LoadData(); // Refresh both grids
-        IsStockOutDialogVisible = false;
-    }
 
     public void UpdateItemInDatabase(InventoryItem item) {
         _repository.UpdateItem(item);
@@ -193,10 +248,25 @@ public partial class MainViewModel: ObservableObject {
     [RelayCommand]
     private void CloseStockInDialog() => IsStockInDialogVisible = false;
 
-    [RelayCommand]
-    private void SaveStockIn() {
-        _repository.ProcessTransaction(StockInForm);
-        LoadData();
-        IsStockInDialogVisible = false;
+
+    [ObservableProperty]
+    private string _snackbarMessage = string.Empty;
+
+    [ObservableProperty]
+    private string _snackbarColor = "#323232"; // Default Dark Gray for success/info
+
+    [ObservableProperty]
+    private double _snackbarOpacity = 0.0;
+
+    private async void ShowNotification(string message, bool isError = false) {
+        SnackbarMessage = message;
+        SnackbarColor = isError ? "#D93025" : "#323232";
+        SnackbarOpacity = 1.0;
+
+        await Task.Delay(3000);
+
+        if (SnackbarMessage == message) {
+            SnackbarOpacity = 0.0; 
+        }
     }
 }
