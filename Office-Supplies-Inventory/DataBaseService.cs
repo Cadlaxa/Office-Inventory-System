@@ -86,6 +86,11 @@ public class InventoryRepository {
     public void UpdateTransactionLog(StockTransactionLog log) {
         try {
             using IDbConnection db = new SqliteConnection(_connectionString);
+            
+            var oldLog = db.QueryFirstOrDefault<StockTransactionLog>(
+                "SELECT * FROM StockTransactionLog WHERE TransactionId = @TransactionId", 
+                new { log.TransactionId });
+
             string sql = @"UPDATE StockTransactionLog 
                            SET Date = @Date, 
                                NameRequested = @NameRequested, 
@@ -96,10 +101,54 @@ public class InventoryRepository {
                                Remarks = @Remarks 
                            WHERE TransactionId = @TransactionId";
             db.Execute(sql, log);
+
+            // Recalculate stock for the item
+            if (oldLog != null) {
+                RecalculateInventoryStock(db, oldLog.ItemCode);
+                
+                // If they changed the ItemCode to a different item, update the new item too
+                if (oldLog.ItemCode != log.ItemCode) {
+                    RecalculateInventoryStock(db, log.ItemCode);
+                }
+            }
         } 
         catch (Exception ex) {
             Log.Error(ex, "Failed to update transaction log!");
         }
+    }
+
+    public void DeleteTransactionLog(int transactionId) {
+        try {
+            using IDbConnection db = new SqliteConnection(_connectionString);
+            
+            var log = db.QueryFirstOrDefault<StockTransactionLog>(
+                "SELECT * FROM StockTransactionLog WHERE TransactionId = @TransactionId", 
+                new { TransactionId = transactionId });
+            
+            db.Execute("DELETE FROM StockTransactionLog WHERE TransactionId = @TransactionId", new { TransactionId = transactionId });
+            Log.Information("Successfully deleted transaction log ID: {TransactionId}", transactionId);
+
+            if (log != null) {
+                RecalculateInventoryStock(db, log.ItemCode);
+            }
+        } 
+        catch (Exception ex) {
+            Log.Error(ex, "Failed to delete transaction log!");
+        }
+    }
+
+    private void RecalculateInventoryStock(IDbConnection db, string itemCode) {
+        string updateSql = @"
+            UPDATE InventoryRecords
+            SET Stock_In = (SELECT COALESCE(SUM(Quantity), 0) FROM StockTransactionLog WHERE ItemCode = @ItemCode AND TransactionType = 'IN'),
+                Stock_Out = (SELECT COALESCE(SUM(Quantity), 0) FROM StockTransactionLog WHERE ItemCode = @ItemCode AND TransactionType = 'OUT')
+            WHERE ItemCode = @ItemCode;
+
+            UPDATE InventoryRecords 
+            SET Final_Stock = InitialStock + Stock_In - Stock_Out
+            WHERE ItemCode = @ItemCode;
+        ";
+        db.Execute(updateSql, new { ItemCode = itemCode });
     }
 
     // CREATE
@@ -166,16 +215,5 @@ public class InventoryRepository {
             WHERE ItemCode = @ItemCode";
             
         db.Execute(recalculateFinalSql, new { ItemCode = log.ItemCode });
-    }
-
-    public void DeleteTransactionLog(int transactionId) {
-        try {
-            using IDbConnection db = new SqliteConnection(_connectionString);
-            db.Execute("DELETE FROM StockTransactionLog WHERE TransactionId = @TransactionId", new { TransactionId = transactionId });
-            Log.Information("Successfully deleted transaction log ID: {TransactionId}", transactionId);
-        } 
-        catch (Exception ex) {
-            Log.Error(ex, "Failed to delete transaction log!");
-        }
     }
 }

@@ -158,9 +158,18 @@ public partial class MainViewModel: ObservableObject {
     [RelayCommand]
     private void SaveStockOut() {
         try {
+            // Item Validation Logic
+            var currentItem = _fullInventoryList.FirstOrDefault(i => i.ItemCode == StockOutForm.ItemCode);
+            if (currentItem != null && StockOutForm.Quantity > currentItem.Final_Stock) {
+                // Show the red error notification
+                ShowNotification($"Insufficient stock! Only {currentItem.Final_Stock} available.", true);
+                // Use 'return' to immediately stop the method so it DOES NOT save to the database
+                return; 
+            }
+            // If the quantity is valid, proceed with saving
             _repository.ProcessTransaction(StockOutForm);
-            LoadData();
-            IsStockOutDialogVisible = false;
+            LoadData(); 
+            IsStockOutDialogVisible = false; 
             ShowNotification("Stock out request logged successfully."); 
         } catch {
             ShowNotification("Error: Failed to log stock out.", true); 
@@ -223,6 +232,7 @@ public partial class MainViewModel: ObservableObject {
 
     public void UpdateTransactionLogInDatabase(StockTransactionLog log) {
         _repository.UpdateTransactionLog(log);
+        LoadData();
     }
 
     [ObservableProperty]
