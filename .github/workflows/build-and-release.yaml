@@ -82,6 +82,30 @@ jobs:
         path: ./artifacts
         pattern: app-binaries-*
         merge-multiple: true
+    
+    - name: Generate Appcast XML
+      run: |
+        VERSION="1.0.${{ github.run_number }}"
+        PUBDATE=$(date -R)
+        REPO_URL="https://github.com/${{ github.repository }}"
+        DOWNLOAD_URL="$REPO_URL/releases/download/v$VERSION"
+        
+        cat <<EOF > ./artifacts/appcast.xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+          <channel>
+            <title>Office Supplies Inventory Updates</title>
+            <item>
+              <title>Version $VERSION</title>
+              <sparkle:releaseNotesLink>$REPO_URL/releases/tag/v$VERSION</sparkle:releaseNotesLink>
+              <pubDate>$PUBDATE</pubDate>
+              <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-win-x64-v$VERSION.zip" sparkle:version="$VERSION" sparkle:os="windows" type="application/octet-stream" />
+              <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-osx-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="macos" type="application/octet-stream" />
+              <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-linux-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="linux" type="application/octet-stream" />
+            </item>
+          </channel>
+        </rss>
+        EOF
 
     # Create the Release and attach the files!
     - name: Create GitHub Release

@@ -322,14 +322,14 @@ public partial class MainViewModel: ObservableObject {
             var logoCell = invSheet.Cell("B1");
             logoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold();
             logoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold();
-            logoCell.Style.Font.FontSize = 18;
+            logoCell.Style.Font.FontSize = 16;
             logoCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
             var deptCell = invSheet.Cell("E1");
-            deptCell.Value = "INFORMATION SYSTEMSS MANAGEMENT SERVICES";
+            deptCell.Value = "INFORMATION SYSTEMS MANAGEMENT SERVICES";
             deptCell.Style.Font.FontColor = XLColor.FromHtml("#1F497D");
             deptCell.Style.Font.Bold = true;
-            deptCell.Style.Font.FontSize = 14;
+            deptCell.Style.Font.FontSize = 16;
 
             // ROW 2: Green Header (A2 to K2 because we have 11 columns now)
             var headerRange = invSheet.Range("A2:K2");
@@ -415,7 +415,7 @@ public partial class MainViewModel: ObservableObject {
                 logDeptCell.Value = "TRANSACTION LOG HISTORY";
                 logDeptCell.Style.Font.FontColor = XLColor.FromHtml("#1F497D");
                 logDeptCell.Style.Font.Bold = true;
-                logDeptCell.Style.Font.FontSize = 14;
+                logDeptCell.Style.Font.FontSize = 16;
 
                 // ROW 2: Green Header (A2 to G2 because logs have 7 columns)
                 var logHeaderRange = logSheet.Range("A2:G2");

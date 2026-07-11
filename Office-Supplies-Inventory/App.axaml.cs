@@ -5,8 +5,6 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using System.Threading.Tasks;
-using Velopack;
-using Velopack.Sources;
 
 namespace Office_Supplies_Inventory;
 
