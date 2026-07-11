@@ -97,7 +97,7 @@ jobs:
             <title>Office Supplies Inventory Updates</title>
             <item>
               <title>Version $VERSION</title>
-              <sparkle:releaseNotesLink>$REPO_URL/releases/tag/v$VERSION</sparkle:releaseNotesLink>
+              <description>Version $VERSION is now available! We strongly recommend updating to keep your inventory system running smoothly and to receive the latest features.</description>
               <pubDate>$PUBDATE</pubDate>
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-win-x64-v$VERSION.zip" sparkle:version="$VERSION" sparkle:os="windows" type="application/octet-stream" />
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-osx-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="macos" type="application/octet-stream" />
