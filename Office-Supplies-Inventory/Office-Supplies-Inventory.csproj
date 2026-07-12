@@ -1,7 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <TargetFramework>net8.0</TargetFramework>
+    <ApplicationIcon>Icon\app-icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -9,7 +17,20 @@
     <Version>1.0.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
-  
+
+  <PropertyGroup>
+    <CFBundleName>OfficeInventory</CFBundleName>
+    <CFBundleDisplayName>Office Supplies Inventory</CFBundleDisplayName>
+    <CFBundleIdentifier>com.isms.office.inventory</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+    <CFBundlePackageType>APPL</CFBundlePackageType>
+    <CFBundleExecutable>Office_Supplies_Inventory</CFBundleExecutable>
+    <CFBundleIconFile>app-icon.icns</CFBundleIconFile>
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.4" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.4" />
@@ -37,5 +58,9 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Icon\**" />
   </ItemGroup>
 </Project>

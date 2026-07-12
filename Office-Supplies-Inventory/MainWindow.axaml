@@ -3,8 +3,9 @@
         xmlns:vm="using:Office_Supplies_Inventory"
         x:DataType="vm:MainViewModel"
         x:Class="Office_Supplies_Inventory.MainWindow"
-        Title="Office Supplies Inventory System" Width="1150" Height="700"
+        Title="Office Supplies Inventory System" Width="1150" Height="650"
         WindowStartupLocation="CenterScreen"
+        Icon="/Icon/app-icon.ico"
         Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
 
     <Window.Styles>
@@ -12,7 +13,7 @@
         <Style Selector="Border.MaterialCard">
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
             <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Padding" Value="20"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"/>
             <Setter Property="BoxShadow" Value="0 4 12 0 #15000000"/>
@@ -196,21 +197,31 @@
     </Window.Styles>
 
     <Panel>
-        <!-- GLOBAL SEARCH BAR (Floating Top Right) -->
+        <StackPanel Orientation="Horizontal" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Top" 
+                Margin="0,20,20,0" 
+                Spacing="12"
+                ZIndex="50">
+                
+        <Image Source="/Icon/app-icon.ico" 
+               Width="36" Height="36" 
+               VerticalAlignment="Center" 
+               IsHitTestVisible="False"/>
+               
+        <!-- GLOBAL SEARCH BAR -->
         <TextBox Text="{Binding SearchQuery}" 
                  Watermark="🔍 Search records..." 
                  Width="320"
-                 HorizontalAlignment="Right" 
-                 VerticalAlignment="Top"
-                 Margin="0,20,20,0" 
                  FontSize="14"
                  Padding="16,8"
-                 ZIndex="50"
+                 VerticalAlignment="Center"
                  Background="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+        </StackPanel>
                  
         <TabControl Margin="10">
             <!-- INVENTORY TAB -->
-            <TabItem Header="📦 Supplies Inventory" FontSize="18" FontWeight="Bold">
+            <TabItem Header="📦 Supplies Inventory" FontSize="22" FontWeight="Bold">
                 <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,15,0,0">
                     
                     <!-- Rounded Container for DataGrid -->
@@ -261,81 +272,83 @@
 
                     <!-- Sidebar Actions (Material Card) -->
                     <Border Grid.Column="1" Classes="MaterialCard">
-                        <StackPanel Spacing="10">
-                            <TextBlock Text="Inventory Actions" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                            
-                            <TextBlock Text="Transactions" Classes="SectionHeader"/>
-                            <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}"/>
-                            <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}"/>
-                            
-                            <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Inventory Actions" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                
+                                <TextBlock Text="Transactions" Classes="SectionHeader"/>
+                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}"/>
+                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}"/>
+                                
+                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
-                            <TextBlock Text="Manage Database" Classes="SectionHeader"/>
-                            <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}"/>
-                            <Button Content="🗑️ Delete Selected" Classes="MaterialBtn Danger" 
-                                    Command="{Binding DeleteSelectedItemsCommand}" 
-                                    CommandParameter="{Binding #InventoryGrid.SelectedItems}"/>
-                            
-                            <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
+                                <TextBlock Text="Manage Database" Classes="SectionHeader"/>
+                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}"/>
+                                <Button Content="🗑️ Delete Selected" Classes="MaterialBtn Danger" 
+                                        Command="{Binding DeleteSelectedItemsCommand}" 
+                                        CommandParameter="{Binding #InventoryGrid.SelectedItems}"/>
+                                
+                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
-                            <TextBlock Text="System Utilities" Classes="SectionHeader"/>
+                                <TextBlock Text="System Utilities" Classes="SectionHeader"/>
 
-                                <Grid ColumnDefinitions="*,*">
-                                    <Button Grid.Column="0" 
-                                            Classes="MaterialBtn Secondary" 
-                                            Command="{Binding ImportDataCommand}"
-                                            Margin="0,0,5,0"
-                                            HorizontalContentAlignment="Center">
-                                        <Panel>
-                                            <!-- Default State -->
-                                            <TextBlock Text="📥 Import" 
-                                                    IsVisible="{Binding !IsImporting}" 
-                                                    HorizontalAlignment="Center" />
-                                            
-                                            <!-- Loading State -->
-                                            <StackPanel Orientation="Horizontal" Spacing="16" 
-                                                        IsVisible="{Binding IsImporting}" 
-                                                        HorizontalAlignment="Center">
-                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
-                                                    Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Panel>
-                                    </Button>
+                                    <Grid ColumnDefinitions="*,*">
+                                        <Button Grid.Column="0" 
+                                                Classes="MaterialBtn Secondary" 
+                                                Command="{Binding ImportDataCommand}"
+                                                Margin="0,0,5,0"
+                                                HorizontalContentAlignment="Center">
+                                            <Panel>
+                                                <!-- Default State -->
+                                                <TextBlock Text="📥 Import" 
+                                                        IsVisible="{Binding !IsImporting}" 
+                                                        HorizontalAlignment="Center" />
+                                                
+                                                <!-- Loading State -->
+                                                <StackPanel Orientation="Horizontal" Spacing="16" 
+                                                            IsVisible="{Binding IsImporting}" 
+                                                            HorizontalAlignment="Center">
+                                                    <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
+                                                        Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Panel>
+                                        </Button>
 
-                                    <Button Grid.Column="1" 
-                                            Classes="MaterialBtn Secondary" 
-                                            Command="{Binding ExportDataCommand}"
-                                            Margin="5,0,0,0"
-                                            HorizontalContentAlignment="Center">
-                                        <Panel>
-                                            <!-- Default State -->
-                                            <TextBlock Text="📤 Export" 
-                                                    IsVisible="{Binding !IsExporting}" 
-                                                    HorizontalAlignment="Center" />
-                                            
-                                            <!-- Loading State -->
-                                            <StackPanel Orientation="Horizontal" Spacing="16" 
-                                                        IsVisible="{Binding IsExporting}" 
-                                                        HorizontalAlignment="Center">
-                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
-                                                    Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Panel>
-                                    </Button>
-                                </Grid>
+                                        <Button Grid.Column="1" 
+                                                Classes="MaterialBtn Secondary" 
+                                                Command="{Binding ExportDataCommand}"
+                                                Margin="5,0,0,0"
+                                                HorizontalContentAlignment="Center">
+                                            <Panel>
+                                                <!-- Default State -->
+                                                <TextBlock Text="📤 Export" 
+                                                        IsVisible="{Binding !IsExporting}" 
+                                                        HorizontalAlignment="Center" />
+                                                
+                                                <!-- Loading State -->
+                                                <StackPanel Orientation="Horizontal" Spacing="16" 
+                                                            IsVisible="{Binding IsExporting}" 
+                                                            HorizontalAlignment="Center">
+                                                    <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
+                                                        Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Panel>
+                                        </Button>
+                                    </Grid>
 
-                            <TextBlock Text="Appearance" Classes="SectionHeader" Margin="0,15,0,0"/>
-                            <ToggleSwitch x:Name="ThemeToggle" 
-                                        OffContent="Light Mode" OnContent="Dark Mode" 
-                                        IsChecked="False"
-                                        Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled"/>
-                        </StackPanel>
+                                <TextBlock Text="Appearance" Classes="SectionHeader" Margin="0,15,0,0"/>
+                                <ToggleSwitch x:Name="ThemeToggle" 
+                                            OffContent="Light Mode" OnContent="Dark Mode" 
+                                            IsChecked="False"
+                                            Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled"/>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
             </TabItem>
 
             <!-- TRANSACTION LOG TAB -->
-            <TabItem Header="📋 Stock In/Out Log" FontSize="18" FontWeight="Bold">
+            <TabItem Header="📋 Stock In/Out Log" FontSize="22" FontWeight="Bold">
                 <Grid Classes="TabContainer" RowDefinitions="Auto, *">
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,15,0,15">
                         <Button Content="🗑️ Delete Selected Logs" 

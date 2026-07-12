@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="400" Height="220"
+        x:Class="Office_Supplies_Inventory.SplashWindow"
+        Title="Loading..."
+        Icon="/Icon/app-icon.ico"
+        CanResize="False"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        ExtendClientAreaToDecorationsHint="True"
+        SystemDecorations="BorderOnly"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid RowDefinitions="*,Auto,Auto,Auto,*">
+        <Image Grid.Row="1" Margin="20" Width="96" Height="96"
+               VerticalAlignment="Top" HorizontalAlignment="Center"
+               Source="/Icon/app-icon.ico"/>
+               
+        <TextBlock Grid.Row="2" Text="Office Supplies Inventory"
+                   FontSize="20" FontWeight="Bold"
+                   HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                   
+        <TextBlock Grid.Row="3" Text="Loading database..."
+                   FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                   
+        <ProgressBar Grid.Row="4" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                     IsIndeterminate="True"/>
+    </Grid>
+</Window>

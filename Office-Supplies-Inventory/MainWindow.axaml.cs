@@ -16,7 +16,7 @@ using System.Diagnostics;
 namespace Office_Supplies_Inventory;
 
 public partial class MainWindow: Window {
-    private readonly string _settingsPath = "settings.json";
+    public readonly string _settingsPath = "settings.json";
     private AppSettings _currentSettings = new(); // Holds all active settings
 
     private SparkleUpdater _sparkle;
@@ -83,7 +83,7 @@ del ""%~f0""
         _sparkle.StartLoop(true, true);
     }
 
-    private void LoadSettings() {
+    public void LoadSettings() {
         try {
             if (File.Exists(_settingsPath)) {
                 string json = File.ReadAllText(_settingsPath);
