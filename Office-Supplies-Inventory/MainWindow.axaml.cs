@@ -3,7 +3,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using System;
+using System.Collections;
+using System.Linq;
 using System.Reflection;
 using System.IO;
 using System.Text.Json;
@@ -178,5 +181,18 @@ del ""%~f0""
 
     public void CheckForUpdates_Click(object sender, RoutedEventArgs e) {
         _sparkle.CheckForUpdatesAtUserRequest();
+    }
+
+    public void ScrollToItem(string itemCode) {
+        Dispatcher.UIThread.InvokeAsync(() => {
+            var itemsEnumerable = InventoryGrid.ItemsSource as IEnumerable;
+            var itemToFocus = itemsEnumerable?.Cast<InventoryItem>()
+                .FirstOrDefault(i => i.ItemCode == itemCode);
+
+            if (itemToFocus != null) {
+                InventoryGrid.SelectedItem = itemToFocus;
+                InventoryGrid.ScrollIntoView(itemToFocus, null);
+            }
+        });
     }
 }

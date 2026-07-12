@@ -100,19 +100,24 @@ public partial class MainViewModel: ObservableObject {
 
     [RelayCommand]
     private void LoadData() {
-        // 1. Fetch Inventory
         var items = _repository.GetAllItems();
         foreach(var item in items) {
             item.Final_Stock = item.InitialStock + item.Stock_In - item.Stock_Out;
         }
         _fullInventoryList = items;
-        AllInventoryItems = new ObservableCollection < InventoryItem > (items);
+        AllInventoryItems = new ObservableCollection<InventoryItem>(items);
 
-        // 2. Fetch Transaction Logs
         var logs = _repository.GetTransactionLogs();
-        _fullTransactionLogs = logs; // Save the raw logs
-
-        // 3. Apply active filters to BOTH lists to update the UI
+        
+        // Sort logic: 
+        // - Valid dates are sorted chronologically (Oldest to Newest).
+        // - Invalid or empty dates are pushed to the bottom using DateTime.MaxValue.
+        _fullTransactionLogs = logs.OrderBy(log => {
+            if (DateTime.TryParse(log.Date, out DateTime dt)) {
+                return dt;
+            }
+            return DateTime.MaxValue;
+        }).ToList();
         FilterData();
     }
 
@@ -155,7 +160,7 @@ public partial class MainViewModel: ObservableObject {
             ItemCode = string.Empty,
                 Description = string.Empty,
                 ManufacturerSupplier = string.Empty,
-                AsOfDate = System.DateTime.Now.ToString("dd-MMM-yy"),
+                AsOfDate = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
                 InitialStock = 0,
                 Stock_In = 0,
                 Stock_Out = 0,
@@ -170,8 +175,9 @@ public partial class MainViewModel: ObservableObject {
 
     [RelayCommand]
     private void CloseAddDialog() => IsAddDialogVisible = false;
-
+    public string LastAddedItemCode { get; set; }
     [RelayCommand]
+    
     private void SaveNewItem() {
         if (string.IsNullOrWhiteSpace(NewItemForm.ItemCode)) {
             ShowNotification("Error: Item Code is required!", true);
@@ -179,8 +185,17 @@ public partial class MainViewModel: ObservableObject {
         }
         try {
             _repository.AddItem(NewItemForm);
+            LastAddedItemCode = NewItemForm.ItemCode; 
             LoadData();
             IsAddDialogVisible = false;
+            
+            // Trigger the scroll in the View
+            if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                if (desktop.MainWindow is MainWindow mainWindow) {
+                    mainWindow.ScrollToItem(LastAddedItemCode);
+                }
+            }
+
             ShowNotification("Item successfully added to inventory.");
         } catch {
             ShowNotification("Error: Could not add item.", true);
@@ -205,7 +220,7 @@ public partial class MainViewModel: ObservableObject {
             ItemCode = SelectedItem?.ItemCode ?? string.Empty,
                 NameRequested = string.Empty,
                 ItemDescription = SelectedItem?.Description ?? string.Empty,
-                Date = System.DateTime.Now.ToString("dd-MMM-yy"),
+                Date = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
                 TransactionType = "OUT",
                 Quantity = 1,
                 Remarks = string.Empty
