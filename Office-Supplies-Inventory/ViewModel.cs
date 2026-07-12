@@ -68,6 +68,16 @@ public partial class MainViewModel: ObservableObject {
     private List < InventoryItem > _fullInventoryList = new();
     private List < StockTransactionLog > _fullTransactionLogs = new();
 
+    [ObservableProperty]
+    private int _selectedTabIndex = 0; 
+
+    [RelayCommand]
+    private void SwitchTab(string index) {
+        if (int.TryParse(index, out int newIndex)) {
+            SelectedTabIndex = newIndex;
+        }
+    }
+
     private string _searchQuery = string.Empty;
     public string SearchQuery {
         get => _searchQuery;

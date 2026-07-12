@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using System;
+using System.Reflection;
 using System.IO;
 using System.Text.Json;
 using NetSparkleUpdater.Interfaces;
@@ -12,17 +13,21 @@ using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.SignatureVerifiers;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Input;
+using System.Windows.Input;
 
 namespace Office_Supplies_Inventory;
 
 public partial class MainWindow: Window {
     public readonly string _settingsPath = "settings.json";
     private AppSettings _currentSettings = new(); // Holds all active settings
-
     private SparkleUpdater _sparkle;
     public MainWindow() {
+
         InitializeComponent();
         DataContext = new MainViewModel();
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        this.Title = $"Office Supplies Inventory System v{version.Major}.{version.Minor}.{version.Build}";
         LoadSettings();
         string appcastUrl = "https://github.com/Cadlaxa/Office-Inventory-System/releases/latest/download/appcast.xml";
 
@@ -169,5 +174,9 @@ del ""%~f0""
             } catch { 
             }
         }
+    }
+
+    public void CheckForUpdates_Click(object sender, RoutedEventArgs e) {
+        _sparkle.CheckForUpdatesAtUserRequest();
     }
 }

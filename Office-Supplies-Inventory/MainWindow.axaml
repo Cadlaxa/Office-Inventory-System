@@ -7,7 +7,8 @@
         WindowStartupLocation="CenterScreen"
         Icon="/Icon/app-icon.ico"
         Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
-
+        
+        
     <Window.Styles>
         <!-- Material You Card Style with Soft Shadow -->
         <Style Selector="Border.MaterialCard">
@@ -158,6 +159,7 @@
         <Style Selector="Grid.DialogBackdrop.show">
             <Setter Property="Opacity" Value="1"/>
             <Setter Property="IsHitTestVisible" Value="True"/>
+            <Setter Property="Background" Value="#B2000000"/>
         </Style>
 
         <!-- Dialog Card (Base State & Transitions) -->
@@ -194,7 +196,22 @@
             <Setter Property="Opacity" Value="1"/>
             <Setter Property="RenderTransform" Value="translateY(0px)"/>
         </Style>
+
+        <Style Selector="ToolTip">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Placement" Value="Pointer"/>
+            <Setter Property="ShowDelay" Value="100"/>
+            <Setter Property="ZIndex" Value="500"/>
+        </Style>
     </Window.Styles>
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+D1" Command="{Binding SwitchTabCommand}" CommandParameter="0"/>
+        <KeyBinding Gesture="Ctrl+D2" Command="{Binding SwitchTabCommand}" CommandParameter="1"/>
+    </Window.KeyBindings>
 
     <Panel>
         <StackPanel Orientation="Horizontal" 
@@ -207,7 +224,7 @@
         <Image Source="/Icon/app-icon.ico" 
                Width="36" Height="36" 
                VerticalAlignment="Center" 
-               IsHitTestVisible="False"/>
+               ToolTip.Tip="Made by CvSU OJT's"/>
                
         <!-- GLOBAL SEARCH BAR -->
         <TextBox Text="{Binding SearchQuery}" 
@@ -219,9 +236,9 @@
                  Background="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
         </StackPanel>
                  
-        <TabControl Margin="10">
+        <TabControl Margin="10" x:Name="MainTabs" SelectedIndex="{Binding SelectedTabIndex}">
             <!-- INVENTORY TAB -->
-            <TabItem Header="📦 Supplies Inventory" FontSize="22" FontWeight="Bold">
+            <TabItem Header="📦 Supplies Inventory" FontSize="22" FontWeight="Bold" ToolTip.Tip="Supplies Inventory [Ctrl + 1]">
                 <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,15,0,0">
                     
                     <!-- Rounded Container for DataGrid -->
@@ -277,16 +294,17 @@
                                 <TextBlock Text="Inventory Actions" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 
                                 <TextBlock Text="Transactions" Classes="SectionHeader"/>
-                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}"/>
-                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}"/>
+                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in)"/>
+                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out)"/>
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
                                 <TextBlock Text="Manage Database" Classes="SectionHeader"/>
-                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}"/>
+                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item"/>
                                 <Button Content="🗑️ Delete Selected" Classes="MaterialBtn Danger" 
                                         Command="{Binding DeleteSelectedItemsCommand}" 
-                                        CommandParameter="{Binding #InventoryGrid.SelectedItems}"/>
+                                        CommandParameter="{Binding #InventoryGrid.SelectedItems}"
+                                        ToolTip.Tip="Delete selected inventory items"/>
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
@@ -297,12 +315,13 @@
                                                 Classes="MaterialBtn Secondary" 
                                                 Command="{Binding ImportDataCommand}"
                                                 Margin="0,0,5,0"
-                                                HorizontalContentAlignment="Center">
+                                                HorizontalContentAlignment="Center"
+                                                ToolTip.Tip="Import data from xlsx file">
                                             <Panel>
                                                 <!-- Default State -->
                                                 <TextBlock Text="📥 Import" 
                                                         IsVisible="{Binding !IsImporting}" 
-                                                        HorizontalAlignment="Center" />
+                                                        HorizontalAlignment="Center"/>
                                                 
                                                 <!-- Loading State -->
                                                 <StackPanel Orientation="Horizontal" Spacing="16" 
@@ -318,12 +337,13 @@
                                                 Classes="MaterialBtn Secondary" 
                                                 Command="{Binding ExportDataCommand}"
                                                 Margin="5,0,0,0"
-                                                HorizontalContentAlignment="Center">
+                                                HorizontalContentAlignment="Center"
+                                                ToolTip.Tip="Export data to xlsx file">
                                             <Panel>
                                                 <!-- Default State -->
                                                 <TextBlock Text="📤 Export" 
                                                         IsVisible="{Binding !IsExporting}" 
-                                                        HorizontalAlignment="Center" />
+                                                        HorizontalAlignment="Center"/>
                                                 
                                                 <!-- Loading State -->
                                                 <StackPanel Orientation="Horizontal" Spacing="16" 
@@ -336,11 +356,24 @@
                                         </Button>
                                     </Grid>
 
-                                <TextBlock Text="Appearance" Classes="SectionHeader" Margin="0,15,0,0"/>
-                                <ToggleSwitch x:Name="ThemeToggle" 
-                                            OffContent="Light Mode" OnContent="Dark Mode" 
-                                            IsChecked="False"
-                                            Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled"/>
+                                <TextBlock Text="Settings" Classes="SectionHeader" Margin="0,15,0,0"/>
+                                    <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center" Margin="0,5,0,0">
+                                        <!-- Theme Toggle -->
+                                        <ToggleSwitch x:Name="ThemeToggle" 
+                                                    Grid.Column="0"
+                                                    OffContent="Light Mode" OnContent="Dark Mode" 
+                                                    IsChecked="False"
+                                                    Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled"
+                                                    ToolTip.Tip="Toggles Light or Dark Theme"/>
+                                        
+                                        <!-- Check for Updates Button -->
+                                        <Button Grid.Column="1" 
+                                                Content="🔄" 
+                                                Classes="MaterialBtn Secondary"
+                                                Width="60" 
+                                                Click="CheckForUpdates_Click"
+                                                ToolTip.Tip="Check for Updates"/>
+                                    </Grid>
                             </StackPanel>
                         </ScrollViewer>
                     </Border>
@@ -348,14 +381,15 @@
             </TabItem>
 
             <!-- TRANSACTION LOG TAB -->
-            <TabItem Header="📋 Stock In/Out Log" FontSize="22" FontWeight="Bold">
+            <TabItem Header="📋 Stock In/Out Log" FontSize="22" FontWeight="Bold" ToolTip.Tip="Stock In/Out Log [Ctrl + 2]">
                 <Grid Classes="TabContainer" RowDefinitions="Auto, *">
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,15,0,15">
                         <Button Content="🗑️ Delete Selected Logs" 
                                 Classes="MaterialBtn Danger"
                                 HorizontalAlignment="Left" Width="220"
                                 Command="{Binding DeleteSelectedLogsCommand}" 
-                                CommandParameter="{Binding #TransactionLogGrid.SelectedItems}"/>
+                                CommandParameter="{Binding #TransactionLogGrid.SelectedItems}"
+                                ToolTip.Tip="Delete selected transaction logs"/>
                     </StackPanel>
 
                     <Border Grid.Row="1" Classes="MaterialCard" Padding="0" ClipToBounds="True">
@@ -402,13 +436,13 @@
 
         <!-- DIALOG OVERLAYS -->
         <!-- Add Item Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsAddDialogVisible}" Background="#B2000000">
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsAddDialogVisible}">
             <Border Classes="MaterialCard" Width="480" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add New Supply Item" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                     
                     <TextBlock Text="Item (Identifier/Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding NewItemForm.ItemCode}" Watermark="e.g., 44122011-FO-T04"/>
+                    <TextBox Text="{Binding NewItemForm.ItemCode}" Watermark="e.g., 44122011-FO-T04" AcceptsReturn="False"/>
                     
                     <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding NewItemForm.Description}" Watermark="e.g., Bond Paper (A4)"/>
@@ -431,15 +465,15 @@
                     <TextBox Text="{Binding NewItemForm.Remarks}" Watermark="Optional notes..."/>
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
-                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseAddDialogCommand}" Margin="0,0,8,0"/>
-                        <Button Grid.Column="1" Content="💾 Save Item" Classes="MaterialBtn Primary" Command="{Binding SaveNewItemCommand}" Margin="8,0,0,0"/>
+                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseAddDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel adding a new item"/>
+                        <Button Grid.Column="1" Content="💾 Save Item" Classes="MaterialBtn Primary" Command="{Binding SaveNewItemCommand}" Margin="8,0,0,0" ToolTip.Tip="Save the new inventory item"/>
                     </Grid>
                 </StackPanel>
             </Border>
         </Grid>
 
         <!-- Stock Out Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockOutDialogVisible}" Background="#B2000000">
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockOutDialogVisible}">
             <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Log Supply Request (Out)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
@@ -466,15 +500,15 @@
                     <TextBox Text="{Binding StockOutForm.Remarks}" Watermark="e.g., Received by employee"/>
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
-                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockOutDialogCommand}" Margin="0,0,8,0"/>
-                        <Button Grid.Column="1" Content="💾 Log Request" Classes="MaterialBtn Primary" Command="{Binding SaveStockOutCommand}" Margin="8,0,0,0" />
+                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockOutDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel the stock out request"/>
+                        <Button Grid.Column="1" Content="💾 Log Request" Classes="MaterialBtn Primary" Command="{Binding SaveStockOutCommand}" Margin="8,0,0,0" ToolTip.Tip="Log the stock out request"/>
                     </Grid>
                 </StackPanel>
             </Border>
         </Grid>
 
         <!-- Stock In Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockInDialogVisible}" Background="#B2000000">
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockInDialogVisible}">
             <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add Delivery (Stock In)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
@@ -501,8 +535,8 @@
                     <TextBox Text="{Binding StockInForm.Remarks}" Watermark="e.g., Monthly restocking"/>
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
-                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockInDialogCommand}" Margin="0,0,8,0"/>
-                        <Button Grid.Column="1" Content="💾 Add Delivery" Classes="MaterialBtn Success" Command="{Binding SaveStockInCommand}" Margin="8,0,0,0"/>
+                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockInDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel the stock in request"/>
+                        <Button Grid.Column="1" Content="💾 Add Delivery" Classes="MaterialBtn Success" Command="{Binding SaveStockInCommand}" Margin="8,0,0,0" ToolTip.Tip="Add the stock in delivery"/>
                     </Grid>
                 </StackPanel>
             </Border>
