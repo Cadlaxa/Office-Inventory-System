@@ -113,11 +113,14 @@ del ""%~f0""
         }
     }
 
-    private void InventoryGrid_CellEditEnded(object ? sender, DataGridCellEditEndedEventArgs e) {
-        if (e.EditAction == DataGridEditAction.Commit) {
-            var editedItem = e.Row.DataContext as InventoryItem;
-            if (editedItem != null && DataContext is MainViewModel vm) {
-                vm.UpdateItemInDatabase(editedItem);
+    private void InventoryGrid_CellEditEnded(object ? sender, Avalonia.Controls.DataGridCellEditEndedEventArgs e) {
+        if (e.EditAction == Avalonia.Controls.DataGridEditAction.Commit) {
+            if (e.Row.DataContext is InventoryItem editedItem) {
+                editedItem.Final_Stock = editedItem.InitialStock + editedItem.Stock_In - editedItem.Stock_Out;
+                if (this.DataContext is MainViewModel viewModel) {
+                    viewModel.UpdateItemInDatabase(editedItem);
+                    viewModel.LoadDataCommand.Execute(null);
+                }
             }
         }
     }

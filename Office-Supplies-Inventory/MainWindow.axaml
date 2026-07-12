@@ -84,15 +84,25 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeLowBrush}"/>
+            <!-- A subtle tint that perfectly adapts to Light/Dark mode -->
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
                 </Transitions>
             </Setter>
         </Style>
+        
+        <!-- Smoothly darken the background on hover -->
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
+        </Style>
+
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="#1A73E8"/>
+            <!-- Reverts to solid background when actively typing -->
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
         </Style>
         
         <!-- Subtle Section Headers -->
@@ -114,6 +124,75 @@
         <Style Selector="DataGridRow:pointerover">
             <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}"/>
         </Style>
+
+        <Style Selector="Arc.Spinner">
+            <Setter Property="RenderTransformOrigin" Value="50%,50%"/>
+            <Setter Property="RenderTransform">
+                <RotateTransform Angle="0"/>
+            </Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="RotateTransform.Angle" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="RotateTransform.Angle" Value="360"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="Grid.DialogBackdrop">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="ZIndex" Value="100"/> 
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" Easing="SineEaseInOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Dialog Backdrop (Visible/Open State) -->
+        <Style Selector="Grid.DialogBackdrop.show">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+        </Style>
+
+        <!-- Dialog Card (Base State & Transitions) -->
+        <Style Selector="Grid.DialogBackdrop > Border.MaterialCard">
+            <Setter Property="RenderTransformOrigin" Value="50%,50%"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="RenderTransform" Value="scale(0.85) translateY(20px)"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" Easing="SineEaseInOut"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="SineEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Dialog Card (Visible/Open State) -->
+        <Style Selector="Grid.DialogBackdrop.show > Border.MaterialCard">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="RenderTransform" Value="scale(1) translateY(0px)"/>
+        </Style>
+
+        <Style Selector="Grid.TabContainer">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="RenderTransform" Value="translateY(25px)"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="TabItem:selected Grid.TabContainer">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="RenderTransform" Value="translateY(0px)"/>
+        </Style>
     </Window.Styles>
 
     <Panel>
@@ -131,8 +210,8 @@
                  
         <TabControl Margin="10">
             <!-- INVENTORY TAB -->
-            <TabItem Header="📦 Supplies Inventory" FontSize="18" FontWeight="SemiBold">
-                <Grid ColumnDefinitions="*, 280" Margin="0,15,0,0">
+            <TabItem Header="📦 Supplies Inventory" FontSize="18" FontWeight="Bold">
+                <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,15,0,0">
                     
                     <!-- Rounded Container for DataGrid -->
                     <Border Grid.Column="0" Classes="MaterialCard" Margin="0,0,15,0" Padding="0" ClipToBounds="True">
@@ -165,14 +244,14 @@
                             </DataGrid.Styles>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="ITEM CODE" Binding="{Binding ItemCode}" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="ITEM CODE" Binding="{Binding ItemCode}" FontWeight="Bold" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="DESCRIPTION" Binding="{Binding Description}"/>
                                 <DataGridTextColumn Header="MANUFACTURER" Binding="{Binding ManufacturerSupplier}" />
                                 <DataGridTextColumn Header="AS OF" Binding="{Binding AsOfDate}" />
                                 <DataGridTextColumn Header="IN STOCK" Binding="{Binding InitialStock}" />
-                                <DataGridTextColumn Header="IN" Binding="{Binding Stock_In}" />
-                                <DataGridTextColumn Header="OUT" Binding="{Binding Stock_Out}" />
-                                <DataGridTextColumn Header="FINAL" Binding="{Binding Final_Stock}" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="IN" Binding="{Binding Stock_In}"  IsReadOnly="True"/>
+                                <DataGridTextColumn Header="OUT" Binding="{Binding Stock_Out}"  IsReadOnly="True"/>
+                                <DataGridTextColumn Header="FINAL" Binding="{Binding Final_Stock}" FontWeight="Bold" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="LOCATION" Binding="{Binding Location}" />
                                 <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
                                 <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" />
@@ -200,16 +279,49 @@
                             <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
                             <TextBlock Text="System Utilities" Classes="SectionHeader"/>
+
                                 <Grid ColumnDefinitions="*,*">
-                                    <Button Grid.Column="0" Content="📥 Import" 
+                                    <Button Grid.Column="0" 
                                             Classes="MaterialBtn Secondary" 
                                             Command="{Binding ImportDataCommand}"
-                                            Margin="0,0,5,0"/>
+                                            Margin="0,0,5,0"
+                                            HorizontalContentAlignment="Center">
+                                        <Panel>
+                                            <!-- Default State -->
+                                            <TextBlock Text="📥 Import" 
+                                                    IsVisible="{Binding !IsImporting}" 
+                                                    HorizontalAlignment="Center" />
                                             
-                                    <Button Grid.Column="1" Content="📤 Export" 
+                                            <!-- Loading State -->
+                                            <StackPanel Orientation="Horizontal" Spacing="16" 
+                                                        IsVisible="{Binding IsImporting}" 
+                                                        HorizontalAlignment="Center">
+                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
+                                                    Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Panel>
+                                    </Button>
+
+                                    <Button Grid.Column="1" 
                                             Classes="MaterialBtn Secondary" 
                                             Command="{Binding ExportDataCommand}"
-                                            Margin="5,0,0,0"/>
+                                            Margin="5,0,0,0"
+                                            HorizontalContentAlignment="Center">
+                                        <Panel>
+                                            <!-- Default State -->
+                                            <TextBlock Text="📤 Export" 
+                                                    IsVisible="{Binding !IsExporting}" 
+                                                    HorizontalAlignment="Center" />
+                                            
+                                            <!-- Loading State -->
+                                            <StackPanel Orientation="Horizontal" Spacing="16" 
+                                                        IsVisible="{Binding IsExporting}" 
+                                                        HorizontalAlignment="Center">
+                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
+                                                    Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Panel>
+                                    </Button>
                                 </Grid>
 
                             <TextBlock Text="Appearance" Classes="SectionHeader" Margin="0,15,0,0"/>
@@ -223,8 +335,8 @@
             </TabItem>
 
             <!-- TRANSACTION LOG TAB -->
-            <TabItem Header="📋 Stock In/Out Log" FontSize="18" FontWeight="SemiBold">
-                <Grid RowDefinitions="Auto, *">
+            <TabItem Header="📋 Stock In/Out Log" FontSize="18" FontWeight="Bold">
+                <Grid Classes="TabContainer" RowDefinitions="Auto, *">
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,15,0,15">
                         <Button Content="🗑️ Delete Selected Logs" 
                                 Classes="MaterialBtn Danger"
@@ -277,7 +389,7 @@
 
         <!-- DIALOG OVERLAYS -->
         <!-- Add Item Dialog -->
-        <Grid Background="#B2000000" IsVisible="{Binding IsAddDialogVisible}" ZIndex="100">
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsAddDialogVisible}" Background="#B2000000">
             <Border Classes="MaterialCard" Width="480" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add New Supply Item" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
@@ -314,13 +426,22 @@
         </Grid>
 
         <!-- Stock Out Dialog -->
-        <Grid Background="#B2000000" IsVisible="{Binding IsStockOutDialogVisible}" ZIndex="100">
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockOutDialogVisible}" Background="#B2000000">
             <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Log Supply Request (Out)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                     
                     <TextBlock Text="Item (Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockOutForm.ItemCode}" IsReadOnly="True" />
+                    <ComboBox ItemsSource="{Binding AllInventoryItems}" 
+                            SelectedValue="{Binding StockOutForm.ItemCode}" 
+                            SelectedValueBinding="{Binding ItemCode}"
+                            HorizontalAlignment="Stretch" CornerRadius="12">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ItemCode}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     
                     <TextBlock Text="Employee Name:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockOutForm.NameRequested}" Watermark="e.g., Juan Dela Cruz"/>
@@ -340,14 +461,15 @@
         </Grid>
 
         <!-- Stock In Dialog -->
-        <Grid Background="#B2000000" IsVisible="{Binding IsStockInDialogVisible}" ZIndex="100">
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockInDialogVisible}" Background="#B2000000">
             <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add Delivery (Stock In)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                     
                     <TextBlock Text="Select Item (Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <ComboBox ItemsSource="{Binding AllInventoryItems}" 
-                            SelectedItem="{Binding StockOutForm.Item}" 
+                            SelectedValue="{Binding StockInForm.ItemCode}" 
+                            SelectedValueBinding="{Binding ItemCode}"
                             HorizontalAlignment="Stretch" CornerRadius="12">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
