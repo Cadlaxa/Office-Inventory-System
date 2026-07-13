@@ -285,7 +285,7 @@
                                 <DataGridTextColumn Header="MANUFACTURER" Binding="{Binding ManufacturerSupplier}" />
                                 <DataGridTextColumn Header="AS OF" Binding="{Binding AsOfDate}" />
 
-                                <DataGridTextColumn Binding="{Binding InitialStock}" IsReadOnly="True">
+                                <DataGridTextColumn Binding="{Binding InitialStock}">
                                     <DataGridTextColumn.Header>
                                         <Border Background="#AF37F5" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="IN STOCK" Foreground="White" FontWeight="Bold"/>
@@ -458,7 +458,7 @@
                             </DataGrid.Styles>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding Date}" FontWeight="Bold" IsReadOnly="True">
+                                <DataGridTextColumn Binding="{Binding Date}" FontWeight="Bold">
                                     <DataGridTextColumn.Header>
                                         <Border Background="#1A73E8" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="DATE" Foreground="White" FontWeight="Bold"/>
@@ -470,7 +470,7 @@
                                 <DataGridTextColumn Header="ITEM DESCRIPTION" Binding="{Binding ItemDescription}" Width="*" />
                                 <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" />
 
-                                <DataGridTextColumn Binding="{Binding TransactionType}" IsReadOnly="True">
+                                <DataGridTextColumn Binding="{Binding TransactionType}">
                                     <DataGridTextColumn.Header>
                                         <Border Background="#D93025" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="IN/OUT" Foreground="White" FontWeight="Bold"/>
