@@ -268,18 +268,55 @@
                                     <Setter Property="FontWeight" Value="Bold" />
                                     <Setter Property="Padding" Value="12,12" />
                                     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 </Style>
                             </DataGrid.Styles>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="ITEM CODE" Binding="{Binding ItemCode}" FontWeight="Bold" IsReadOnly="True"/>
+                                <DataGridTextColumn Binding="{Binding ItemCode}" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#D95E25" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="ITEM CODE" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+
                                 <DataGridTextColumn Header="DESCRIPTION" Binding="{Binding Description}"/>
                                 <DataGridTextColumn Header="MANUFACTURER" Binding="{Binding ManufacturerSupplier}" />
                                 <DataGridTextColumn Header="AS OF" Binding="{Binding AsOfDate}" />
-                                <DataGridTextColumn Header="IN STOCK" Binding="{Binding InitialStock}" />
-                                <DataGridTextColumn Header="IN" Binding="{Binding Stock_In}"  IsReadOnly="True"/>
-                                <DataGridTextColumn Header="OUT" Binding="{Binding Stock_Out}"  IsReadOnly="True"/>
-                                <DataGridTextColumn Header="FINAL" Binding="{Binding Final_Stock}" FontWeight="Bold" IsReadOnly="True"/>
+
+                                <DataGridTextColumn Binding="{Binding InitialStock}" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#AF37F5" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="IN STOCK" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+                                
+                                <DataGridTextColumn Binding="{Binding Stock_In}" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#1E8E3E" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="IN" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+
+                                <DataGridTextColumn Binding="{Binding Stock_Out}" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#D93025" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="OUT" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+
+                                <DataGridTextColumn Binding="{Binding Final_Stock}" FontWeight="Bold" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#1A73E8" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="FINAL" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+
                                 <DataGridTextColumn Header="LOCATION" Binding="{Binding Location}" />
                                 <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
                                 <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" />
@@ -416,16 +453,39 @@
                                     <Setter Property="FontWeight" Value="Bold" />
                                     <Setter Property="Padding" Value="12,12" />
                                     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 </Style>
                             </DataGrid.Styles>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="DATE" Binding="{Binding Date}" />
+                                <DataGridTextColumn Binding="{Binding Date}" FontWeight="Bold" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#1A73E8" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="DATE" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+
                                 <DataGridTextColumn Header="NAME REQUESTED" Binding="{Binding NameRequested}" />
                                 <DataGridTextColumn Header="ITEM DESCRIPTION" Binding="{Binding ItemDescription}" Width="*" />
                                 <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" />
-                                <DataGridTextColumn Header="IN/OUT" Binding="{Binding TransactionType}" FontWeight="Bold" />
-                                <DataGridTextColumn Header="CODE / ITEM NO." Binding="{Binding ItemCode}" />
+
+                                <DataGridTextColumn Binding="{Binding TransactionType}" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#D93025" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="IN/OUT" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+
+                                <DataGridTextColumn Binding="{Binding ItemCode}" IsReadOnly="True">
+                                    <DataGridTextColumn.Header>
+                                        <Border Background="#D95E25" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="CODE / ITEM NO." Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTextColumn.Header>
+                                </DataGridTextColumn>
+                                
                                 <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
                             </DataGrid.Columns>
                         </DataGrid>
@@ -466,7 +526,7 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseAddDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel adding a new item"/>
-                        <Button Grid.Column="1" Content="💾 Save Item" Classes="MaterialBtn Primary" Command="{Binding SaveNewItemCommand}" Margin="8,0,0,0" ToolTip.Tip="Save the new inventory item"/>
+                        <Button Grid.Column="1" Content="💾 Add Item" Classes="MaterialBtn Primary" Command="{Binding SaveNewItemCommand}" Margin="8,0,0,0" IsDefault="True" ToolTip.Tip="Save the new inventory item"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -501,7 +561,7 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockOutDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel the stock out request"/>
-                        <Button Grid.Column="1" Content="💾 Log Request" Classes="MaterialBtn Primary" Command="{Binding SaveStockOutCommand}" Margin="8,0,0,0" ToolTip.Tip="Log the stock out request"/>
+                        <Button Grid.Column="1" Content="💾 Log Request" Classes="MaterialBtn Primary" Command="{Binding SaveStockOutCommand}" Margin="8,0,0,0" IsDefault="True" ToolTip.Tip="Log the stock out request"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -536,7 +596,7 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockInDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel the stock in request"/>
-                        <Button Grid.Column="1" Content="💾 Add Delivery" Classes="MaterialBtn Success" Command="{Binding SaveStockInCommand}" Margin="8,0,0,0" ToolTip.Tip="Add the stock in delivery"/>
+                        <Button Grid.Column="1" Content="💾 Add Delivery" Classes="MaterialBtn Success" Command="{Binding SaveStockInCommand}" Margin="8,0,0,0" IsDefault="True" ToolTip.Tip="Add the stock in delivery"/>
                     </Grid>
                 </StackPanel>
             </Border>

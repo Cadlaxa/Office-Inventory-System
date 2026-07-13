@@ -360,9 +360,8 @@ public partial class MainViewModel: ObservableObject {
                 var invSheet = workbook.Worksheets.Add("Inventory Stock");
 
                 var logoCell = invSheet.Cell("B1");
-                logoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold();
-                logoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold();
-                logoCell.Style.Font.FontSize = 16;
+                logoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold().SetFontSize(16);;
+                logoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold().SetFontSize(16);;
                 logoCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                 var deptCell = invSheet.Cell("E1");
@@ -462,9 +461,8 @@ public partial class MainViewModel: ObservableObject {
                     var logSheet = workbook.Worksheets.Add($"Logs - {group.Key}");
 
                     var logLogoCell = logSheet.Cell("B1");
-                    logLogoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold();
-                    logLogoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold();
-                    logLogoCell.Style.Font.FontSize = 18;
+                    logLogoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold().SetFontSize(16);
+                    logLogoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold().SetFontSize(16);
                     logLogoCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                     var logDeptCell = logSheet.Cell("D1");
@@ -524,6 +522,7 @@ public partial class MainViewModel: ObservableObject {
                 workbook.SaveAs(filePath);
             });
             ShowNotification("Excel export completed successfully!");
+            Serilog.Log.Information("Data exported to Excel at {FilePath}", filePath);
 
         } catch (Exception ex) {
             ShowNotification("Error: Could not save Excel file.", true);
