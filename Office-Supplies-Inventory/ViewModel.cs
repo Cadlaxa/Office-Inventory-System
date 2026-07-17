@@ -574,6 +574,7 @@ public partial class MainViewModel : ObservableObject {
                     }
                 }
                 invSheet.Columns().AdjustToContents();
+                invSheet.Column(5).Width = 13;
 
                 // ==========================================
                 // 2. FORMAT TRANSACTION LOG SHEETS
@@ -653,6 +654,7 @@ public partial class MainViewModel : ObservableObject {
                         if (log.TransactionType == "OUT") logSheet.Cell(row, 5).Style.Font.FontColor = XLColor.Red;
                     }
                     logSheet.Columns().AdjustToContents();
+                    logSheet.Column(4).Width = 10;
                 }
 
                 workbook.SaveAs(filePath);
@@ -661,7 +663,7 @@ public partial class MainViewModel : ObservableObject {
             Serilog.Log.Information("Data exported to Excel at {FilePath}", filePath);
 
         } catch (Exception ex) {
-            ShowNotification("Error: Could not save Excel file.", true);
+            ShowNotification("Error: " + ex.Message, true);
             Serilog.Log.Error(ex, "Failed to export data to Excel.");
         } finally {
             IsExporting = false;
@@ -772,7 +774,7 @@ public partial class MainViewModel : ObservableObject {
             ShowNotification($"Import success: {addedItems} items added, {updatedItems} updated. {addedLogs} logs imported.");
 
         } catch (Exception ex) {
-            ShowNotification("Error: Could not read the Excel file.", true);
+            ShowNotification("Error: " + ex.Message, true);
             Serilog.Log.Error(ex, "Failed to import data from Excel.");
         } finally {
             IsImporting = false;
