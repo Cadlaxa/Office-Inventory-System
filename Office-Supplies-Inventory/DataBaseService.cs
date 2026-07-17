@@ -87,33 +87,45 @@ public class InventoryRepository {
         try {
             using IDbConnection db = new SqliteConnection(_connectionString);
             
-            var oldLog = db.QueryFirstOrDefault<StockTransactionLog>(
-                "SELECT * FROM StockTransactionLog WHERE TransactionId = @TransactionId", 
-                new { log.TransactionId });
+            // UPDATE THE TRANSACTION LOG ITSELF
+            string updateLogSql = @"UPDATE StockTransactionLog
+                                    SET Date = @Date,
+                                        NameRequested = @NameRequested,
+                                        ItemDescription = @ItemDescription,
+                                        Quantity = @Quantity,
+                                        TransactionType = @TransactionType,
+                                        Remarks = @Remarks
+                                    WHERE TransactionId = @TransactionId";
+                                    
+            db.Execute(updateLogSql, log);
 
-            string sql = @"UPDATE StockTransactionLog 
-                           SET Date = @Date, 
-                               NameRequested = @NameRequested, 
-                               ItemDescription = @ItemDescription, 
-                               Quantity = @Quantity, 
-                               TransactionType = @TransactionType, 
-                               ItemCode = @ItemCode, 
-                               Remarks = @Remarks 
-                           WHERE TransactionId = @TransactionId";
-            db.Execute(sql, log);
-
-            // Recalculate stock for the item
-            if (oldLog != null) {
-                RecalculateInventoryStock(db, oldLog.ItemCode);
+            string updateInventorySql = @"
+                UPDATE InventoryRecords 
+                SET Description = @ItemDescription,
+                    
+                    Stock_In = COALESCE((SELECT SUM(Quantity) FROM StockTransactionLog 
+                                        WHERE ItemCode = @ItemCode AND TransactionType = 'IN'), 0),
+                    
+                    Stock_Out = COALESCE((SELECT SUM(Quantity) FROM StockTransactionLog 
+                                        WHERE ItemCode = @ItemCode AND TransactionType = 'OUT'), 0),
+                    
+                    Final_Stock = InitialStock + 
+                                COALESCE((SELECT SUM(Quantity) FROM StockTransactionLog 
+                                            WHERE ItemCode = @ItemCode AND TransactionType = 'IN'), 0) - 
+                                COALESCE((SELECT SUM(Quantity) FROM StockTransactionLog 
+                                            WHERE ItemCode = @ItemCode AND TransactionType = 'OUT'), 0)
                 
-                // If they changed the ItemCode to a different item, update the new item too
-                if (oldLog.ItemCode != log.ItemCode) {
-                    RecalculateInventoryStock(db, log.ItemCode);
-                }
-            }
-        } 
+                WHERE ItemCode = @ItemCode";
+                
+            db.Execute(updateInventorySql, new { 
+                ItemDescription = log.ItemDescription, 
+                ItemCode = log.ItemCode 
+            });
+            Serilog.Log.Information("Successfully updated transaction {TransactionId} and recalculated stock for item {ItemCode}.", log.TransactionId, log.ItemCode);
+        }
         catch (Exception ex) {
-            Log.Error(ex, "Failed to update transaction log!");
+            Serilog.Log.Error(ex, "Failed to update transaction {TransactionId} and recalculate stock for item {ItemCode}.", log.TransactionId, log.ItemCode);
+            throw; 
         }
     }
 
@@ -169,23 +181,34 @@ public class InventoryRepository {
     public void UpdateItem(InventoryItem item) {
         try {
             using IDbConnection db = new SqliteConnection(_connectionString);
-            string sql = @"UPDATE InventoryRecords 
-                           SET Description = @Description, 
-                               ManufacturerSupplier = @ManufacturerSupplier, 
-                               AsOfDate = @AsOfDate,
-                               InitialStock = @InitialStock,
-                               Stock_In = @Stock_In,
-                               Stock_Out = @Stock_Out,
-                               Final_Stock = @Final_Stock,
-                               Location = @Location, 
-                               Remarks = @Remarks,
-                               Status = @Status 
-                           WHERE ItemCode = @ItemCode";
-            db.Execute(sql, item);
-            Log.Information("Successfully updated item {ItemCode}.", item.ItemCode);
+            
+            // UPDATE THE MAIN INVENTORY ITEM
+            string updateItemSql = @"UPDATE InventoryRecords 
+                                    SET Description = @Description, 
+                                        ManufacturerSupplier = @ManufacturerSupplier, 
+                                        AsOfDate = @AsOfDate,
+                                        InitialStock = @InitialStock,
+                                        Stock_In = @Stock_In,
+                                        Stock_Out = @Stock_Out,
+                                        Final_Stock = @Final_Stock,
+                                        Location = @Location, 
+                                        Remarks = @Remarks,
+                                        Status = @Status 
+                                    WHERE ItemCode = @ItemCode";
+                                    
+            db.Execute(updateItemSql, item);
+
+            // CASCADING UPDATE: UPDATE ALL TRANSACTION LOGS FOR THIS ITEM
+            string updateLogsSql = @"UPDATE StockTransactionLog
+                                    SET ItemDescription = @Description
+                                    WHERE ItemCode = @ItemCode";
+                                    
+            db.Execute(updateLogsSql, new { Description = item.Description, ItemCode = item.ItemCode });
+            Log.Information("Successfully updated item {ItemCode} and its cascading transaction logs.", item.ItemCode);
         }
         catch (Exception ex) {
-            Log.Error(ex, "Failed to update item {ItemCode}.", item.ItemCode);
+            Log.Error(ex, "Failed to update item {ItemCode} and its cascading transaction logs.", item.ItemCode);
+            throw; 
         }
     }
 

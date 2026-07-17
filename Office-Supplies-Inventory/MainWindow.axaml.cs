@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.Threading;
 using System;
 using System.Collections;
@@ -121,7 +122,7 @@ del ""%~f0""
         }
     }
 
-    private void InventoryGrid_CellEditEnded(object ? sender, Avalonia.Controls.DataGridCellEditEndedEventArgs e) {
+    /*private void InventoryGrid_CellEditEnded(object ? sender, Avalonia.Controls.DataGridCellEditEndedEventArgs e) {
         if (e.EditAction == Avalonia.Controls.DataGridEditAction.Commit) {
             if (e.Row.DataContext is InventoryItem editedItem) {
                 editedItem.Final_Stock = editedItem.InitialStock + editedItem.Stock_In - editedItem.Stock_Out;
@@ -130,6 +131,13 @@ del ""%~f0""
                     viewModel.LoadDataCommand.Execute(null);
                 }
             }
+        }
+    }*/
+
+    private void InventoryGrid_DoubleTapped(object? sender, TappedEventArgs e) {
+        if (DataContext is MainViewModel viewModel) {
+            viewModel.OpenEditDialog();
+            e.Handled = true; 
         }
     }
 
@@ -194,5 +202,30 @@ del ""%~f0""
                 InventoryGrid.ScrollIntoView(itemToFocus, null);
             }
         });
+    }
+
+    private void Window_KeyDown(object? sender, KeyEventArgs e) {
+        if (e.Key == Key.Escape) {
+            if (DataContext is MainViewModel vm) {
+                if (vm.IsAddDialogVisible) {
+                    vm.CloseAddDialogCommand.Execute(null);
+                }
+                else if (vm.IsEditDialogVisible) {
+                    vm.CloseEditDialogCommand.Execute(null);
+                }
+                else if (vm.IsStockInDialogVisible) {
+                    vm.CloseStockInDialogCommand.Execute(null);
+                }
+                else if (vm.IsStockOutDialogVisible) {
+                    vm.CloseStockOutDialogCommand.Execute(null);
+                }
+                else if (vm.IsDeleteDialogVisible) {
+                    vm.CloseDeleteDialogCommand.Execute(null);
+                }
+                else if (vm.IsDeleteLogDialogVisible) {
+                    vm.CloseDeleteLogDialogCommand.Execute(null);
+                }
+            }
+        }
     }
 }

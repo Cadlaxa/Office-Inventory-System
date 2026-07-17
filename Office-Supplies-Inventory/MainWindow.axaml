@@ -6,8 +6,8 @@
         Title="Office Supplies Inventory System" Width="1150" Height="650"
         WindowStartupLocation="CenterScreen"
         Icon="/Icon/app-icon.ico"
-        Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
-        
+        Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}"
+        KeyDown="Window_KeyDown">
         
     <Window.Styles>
         <!-- Material You Card Style with Soft Shadow -->
@@ -211,6 +211,8 @@
     <Window.KeyBindings>
         <KeyBinding Gesture="Ctrl+D1" Command="{Binding SwitchTabCommand}" CommandParameter="0"/>
         <KeyBinding Gesture="Ctrl+D2" Command="{Binding SwitchTabCommand}" CommandParameter="1"/>
+        <KeyBinding Command="{Binding OpenAddDialogCommand}" Gesture="Ctrl+N"/>
+        <KeyBinding Command="{Binding HandleGlobalDeleteCommand}" Gesture="Delete"/>
     </Window.KeyBindings>
 
     <Panel>
@@ -249,8 +251,8 @@
                                   SelectedItem="{Binding SelectedItem}"
                                   SelectionMode="Extended"
                                   AutoGenerateColumns="False" 
-                                  IsReadOnly="False" 
-                                  CellEditEnded="InventoryGrid_CellEditEnded"
+                                  IsReadOnly="True" 
+                                  DoubleTapped="InventoryGrid_DoubleTapped"
                                   x:CompileBindings="False" 
                                   CanUserSortColumns="False" 
                                   CanUserResizeColumns="True"
@@ -337,11 +339,11 @@
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
                                 <TextBlock Text="Manage Database" Classes="SectionHeader"/>
-                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item"/>
+                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item [Ctrl+N]"/>
                                 <Button Content="🗑️ Delete Selected" Classes="MaterialBtn Danger" 
-                                        Command="{Binding DeleteSelectedItemsCommand}" 
+                                        Command="{Binding OpenDeleteDialogCommand}" 
                                         CommandParameter="{Binding #InventoryGrid.SelectedItems}"
-                                        ToolTip.Tip="Delete selected inventory items"/>
+                                        ToolTip.Tip="Delete selected inventory items [Delete]"/>
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
 
@@ -424,14 +426,15 @@
                         <Button Content="🗑️ Delete Selected Logs" 
                                 Classes="MaterialBtn Danger"
                                 HorizontalAlignment="Left" Width="220"
-                                Command="{Binding DeleteSelectedLogsCommand}" 
+                                Command="{Binding OpenDeleteLogDialogCommand}" 
                                 CommandParameter="{Binding #TransactionLogGrid.SelectedItems}"
-                                ToolTip.Tip="Delete selected transaction logs"/>
+                                ToolTip.Tip="Delete selected transaction logs [Delete]"/>
                     </StackPanel>
 
                     <Border Grid.Row="1" Classes="MaterialCard" Padding="0" ClipToBounds="True">
                         <DataGrid x:Name="TransactionLogGrid"
                                   ItemsSource="{Binding TransactionLogs}"
+                                  SelectedItem="{Binding SelectedLog}"
                                   SelectionMode="Extended"
                                   AutoGenerateColumns="False" 
                                   IsReadOnly="False" 
@@ -526,7 +529,118 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseAddDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel adding a new item"/>
-                        <Button Grid.Column="1" Content="💾 Add Item" Classes="MaterialBtn Primary" Command="{Binding SaveNewItemCommand}" Margin="8,0,0,0" IsDefault="True" ToolTip.Tip="Save the new inventory item"/>
+                        <Button Grid.Column="1" Content="💾 Add Item" Classes="MaterialBtn Primary" Command="{Binding SaveNewItemCommand}" Margin="8,0,0,0" ToolTip.Tip="Save the new inventory item"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Edit Item Dialog -->
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsEditDialogVisible}">
+            <Border Classes="MaterialCard" Width="520" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
+                <!-- Added a ScrollViewer just in case the screen resolution is small -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
+                    <StackPanel Spacing="12" Margin="4">
+                        
+                        <!-- Title -->
+                        <TextBlock Text="{Binding EditItemForm.ItemCode, StringFormat='Editing: {0}'}" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
+                        
+                        <!-- Description -->
+                        <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        <TextBox Text="{Binding EditItemForm.Description}" Watermark="e.g., Bond Paper (A4)"/>
+
+                        <!-- Manufacturer -->
+                        <TextBlock Text="Manufacturer / Supplier:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        <TextBox Text="{Binding EditItemForm.ManufacturerSupplier}" Watermark="e.g., DBM PS"/>
+                        
+                        <Grid ColumnDefinitions="*, *" Margin="0,5,0,0">
+                            <!-- Initial Stock (CRITICAL: Bound to InitialStockUI to use your custom error messages) -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="Initial Stock Level:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBox Text="{Binding EditItemForm.InitialStockUI}" Watermark="e.g., 50"/>
+                            </StackPanel>
+                            
+                            <!-- Location -->
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                <TextBlock Text="Storage Location:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBox Text="{Binding EditItemForm.Location}" Watermark="e.g., Steel Cabinet"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*, *" Margin="0,5,0,0">
+                            <!-- As Of Date -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="As Of Date:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBox Text="{Binding EditItemForm.AsOfDate}" Watermark="e.g., 2026-07-17"/>
+                            </StackPanel>
+                            
+                            <!-- Status -->
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                <TextBlock Text="Status:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBox Text="{Binding EditItemForm.Status}" Watermark="e.g., Active, Low Stock"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Read-Only Stock Summary Banner -->
+                        <Border Background="#1A000000" CornerRadius="8" Padding="12" Margin="0,5,0,0">
+                            <Grid ColumnDefinitions="*, *, *">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Stock In" FontSize="11" FontWeight="SemiBold" Foreground="#1E8E3E"/>
+                                    <TextBlock Text="{Binding EditItemForm.Stock_In}" FontWeight="Bold" FontSize="16" Foreground="#1E8E3E"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Stock Out" FontSize="11" FontWeight="SemiBold" Foreground="#D93025"/>
+                                    <TextBlock Text="{Binding EditItemForm.Stock_Out}" FontWeight="Bold" FontSize="16" Foreground="#D93025"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Final Stock" FontSize="11" FontWeight="SemiBold" Foreground="#1A73E8"/>
+                                    <TextBlock Text="{Binding EditItemForm.Final_Stock}" FontWeight="Bold" FontSize="16" Foreground="#1A73E8"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Remarks -->
+                        <TextBlock Text="Remarks:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        <TextBox Text="{Binding EditItemForm.Remarks}" Watermark="Optional notes..."/>
+
+                        <!-- Action Buttons -->
+                        <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
+                            <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseEditDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel editing"/>
+                            <Button Grid.Column="1" Content="💾 Save Changes" Classes="MaterialBtn Primary" Command="{Binding SaveEditedItemCommand}" Margin="8,0,0,0" ToolTip.Tip="Save changes to item"/>
+                        </Grid>
+                        
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Delete Confirmation Dialog -->
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsDeleteDialogVisible}">
+            <Border Classes="MaterialCard" Width="400" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Confirm Deletion" FontWeight="Bold" FontSize="20" Foreground="#D93025"/>
+                    <TextBlock Text="Are you sure you want to permanently delete the selected items? This action cannot be undone." 
+                            TextWrapping="Wrap"/>
+                    
+                    <Grid ColumnDefinitions="*, *" Margin="0,10,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseDeleteDialogCommand}" Margin="0,0,8,0"/>
+                        <Button Grid.Column="1" Content="Yes, Delete" Classes="MaterialBtn Danger" Command="{Binding ConfirmDeleteCommand}" Margin="8,0,0,0" IsDefault="True"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Delete Log Confirmation Dialog -->
+        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsDeleteLogDialogVisible}">
+            <Border Classes="MaterialCard" Width="400" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Delete Transaction Logs" FontWeight="Bold" FontSize="20" Foreground="#D93025"/>
+                    <TextBlock Text="Are you sure you want to permanently remove these transaction logs? This cannot be undone." 
+                            TextWrapping="Wrap"/>
+                    
+                    <Grid ColumnDefinitions="*, *" Margin="0,10,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseDeleteLogDialogCommand}" Margin="0,0,8,0"/>
+                        <Button Grid.Column="1" Content="Delete Logs" Classes="MaterialBtn Danger" Command="{Binding ConfirmDeleteLogCommand}" Margin="8,0,0,0" IsDefault="True"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -561,7 +675,7 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockOutDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel the stock out request"/>
-                        <Button Grid.Column="1" Content="💾 Log Request" Classes="MaterialBtn Primary" Command="{Binding SaveStockOutCommand}" Margin="8,0,0,0" IsDefault="True" ToolTip.Tip="Log the stock out request"/>
+                        <Button Grid.Column="1" Content="💾 Log Request" Classes="MaterialBtn Primary" Command="{Binding SaveStockOutCommand}" Margin="8,0,0,0" ToolTip.Tip="Log the stock out request"/>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -588,7 +702,7 @@
                     <TextBlock Text="Supplier/Source:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockInForm.NameRequested}" Watermark="e.g., Office Depot"/>
                     
-                    <TextBlock Text="Quantity Received:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Text="Quantity Delivered:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockInForm.Quantity}" Watermark="e.g., 10"/>
 
                     <TextBlock Text="Remarks:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
@@ -596,7 +710,7 @@
 
                     <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseStockInDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel the stock in request"/>
-                        <Button Grid.Column="1" Content="💾 Add Delivery" Classes="MaterialBtn Success" Command="{Binding SaveStockInCommand}" Margin="8,0,0,0" IsDefault="True" ToolTip.Tip="Add the stock in delivery"/>
+                        <Button Grid.Column="1" Content="💾 Add Delivery" Classes="MaterialBtn Success" Command="{Binding SaveStockInCommand}" Margin="8,0,0,0" ToolTip.Tip="Add the stock in delivery"/>
                     </Grid>
                 </StackPanel>
             </Border>

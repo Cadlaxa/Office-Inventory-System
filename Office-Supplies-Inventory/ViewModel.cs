@@ -13,26 +13,37 @@ using System.IO;
 
 namespace Office_Supplies_Inventory;
 
-public partial class MainViewModel: ObservableObject {
+public partial class MainViewModel : ObservableObject {
     private readonly InventoryRepository _repository = new();
 
     [ObservableProperty]
-    private ObservableCollection < InventoryItem > _inventoryList;
+    private ObservableCollection<InventoryItem> _inventoryList;
 
     [ObservableProperty]
     private InventoryItem _selectedItem;
 
     [ObservableProperty]
-    private ObservableCollection < StockTransactionLog > _transactionLogs;
+    private ObservableCollection<StockTransactionLog> _transactionLogs;
 
+    [ObservableProperty]
+    private StockTransactionLog _selectedLog;
+
+    // Add Dialog Properties
     [ObservableProperty]
     private bool _isAddDialogVisible;
 
     [ObservableProperty]
     private InventoryItem _newItemForm = new();
 
+    // Edit Dialog Properties
     [ObservableProperty]
-    private ObservableCollection < InventoryItem > _allInventoryItems = new();
+    private bool _isEditDialogVisible;
+
+    [ObservableProperty]
+    private InventoryItem _editItemForm = new();
+
+    [ObservableProperty]
+    private ObservableCollection<InventoryItem> _allInventoryItems = new();
 
     [ObservableProperty]
     private bool _isImporting;
@@ -65,8 +76,8 @@ public partial class MainViewModel: ObservableObject {
     [ObservableProperty]
     private double _snackbarOpacity = 0.0;
 
-    private List < InventoryItem > _fullInventoryList = new();
-    private List < StockTransactionLog > _fullTransactionLogs = new();
+    private List<InventoryItem> _fullInventoryList = new();
+    private List<StockTransactionLog> _fullTransactionLogs = new();
 
     [ObservableProperty]
     private int _selectedTabIndex = 0; 
@@ -89,7 +100,6 @@ public partial class MainViewModel: ObservableObject {
     }
 
     public MainViewModel() {
-        // Safe, lightweight initialization
         AppVersion = "1.0.0";
     }
 
@@ -123,8 +133,8 @@ public partial class MainViewModel: ObservableObject {
 
     private void FilterData() {
         if (string.IsNullOrWhiteSpace(SearchQuery)) {
-            InventoryList = new ObservableCollection < InventoryItem > (_fullInventoryList);
-            TransactionLogs = new ObservableCollection < StockTransactionLog > (_fullTransactionLogs);
+            InventoryList = new ObservableCollection<InventoryItem>(_fullInventoryList);
+            TransactionLogs = new ObservableCollection<StockTransactionLog>(_fullTransactionLogs);
             return;
         }
 
@@ -139,7 +149,7 @@ public partial class MainViewModel: ObservableObject {
             (item.Remarks?.ToLower().Contains(query) == true)
         ).ToList();
 
-        InventoryList = new ObservableCollection < InventoryItem > (filteredInventory);
+        InventoryList = new ObservableCollection<InventoryItem>(filteredInventory);
 
         // Filter Transaction Logs
         var filteredLogs = _fullTransactionLogs.Where(log =>
@@ -151,23 +161,25 @@ public partial class MainViewModel: ObservableObject {
             (log.Remarks?.ToLower().Contains(query) == true)
         ).ToList();
 
-        TransactionLogs = new ObservableCollection < StockTransactionLog > (filteredLogs);
+        TransactionLogs = new ObservableCollection<StockTransactionLog>(filteredLogs);
     }
+
+    // --- ADD ITEM LOGIC ---
 
     [RelayCommand]
     private void OpenAddDialog() {
         NewItemForm = new InventoryItem {
             ItemCode = string.Empty,
-                Description = string.Empty,
-                ManufacturerSupplier = string.Empty,
-                AsOfDate = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
-                InitialStock = 0,
-                Stock_In = 0,
-                Stock_Out = 0,
-                Final_Stock = 0,
-                Location = string.Empty,
-                Remarks = string.Empty,
-                Status = string.Empty
+            Description = string.Empty,
+            ManufacturerSupplier = string.Empty,
+            AsOfDate = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
+            InitialStock = 0,
+            Stock_In = 0,
+            Stock_Out = 0,
+            Final_Stock = 0,
+            Location = string.Empty,
+            Remarks = string.Empty,
+            Status = string.Empty
         };
 
         IsAddDialogVisible = true;
@@ -175,9 +187,10 @@ public partial class MainViewModel: ObservableObject {
 
     [RelayCommand]
     private void CloseAddDialog() => IsAddDialogVisible = false;
-    public string LastAddedItemCode { get; set; }
-    [RelayCommand]
     
+    public string LastAddedItemCode { get; set; }
+    
+    [RelayCommand]
     private void SaveNewItem() {
         if (string.IsNullOrWhiteSpace(NewItemForm.ItemCode)) {
             ShowNotification("Error: Item Code is required!", true);
@@ -202,11 +215,58 @@ public partial class MainViewModel: ObservableObject {
         }
     }
 
+    // --- EDIT ITEM LOGIC ---
+
+    public void OpenEditDialog() {
+        if (SelectedItem == null) return; 
+
+        // Copy the data into the temporary Edit form to protect the original data
+        EditItemForm = new InventoryItem {
+            ItemCode = SelectedItem.ItemCode,
+            Description = SelectedItem.Description,
+            ManufacturerSupplier = SelectedItem.ManufacturerSupplier,
+            InitialStockUI = SelectedItem.InitialStock.ToString(), // Pass integer to the UI string
+            Location = SelectedItem.Location,
+            AsOfDate = SelectedItem.AsOfDate,
+            Status = SelectedItem.Status,
+            Remarks = SelectedItem.Remarks,
+            
+            // Read-only values for the banner
+            Stock_In = SelectedItem.Stock_In,
+            Stock_Out = SelectedItem.Stock_Out,
+            Final_Stock = SelectedItem.Final_Stock
+        };
+
+        IsEditDialogVisible = true;
+    }
+
+    [RelayCommand]
+    private void CloseEditDialog() => IsEditDialogVisible = false;
+
+    [RelayCommand]
+    private void SaveEditedItem() {
+        if (string.IsNullOrWhiteSpace(EditItemForm.ItemCode)) {
+            ShowNotification("Error: Item Code is required!", true);
+            return;
+        }
+
+        try {
+            _repository.UpdateItem(EditItemForm);
+            LoadData();
+            IsEditDialogVisible = false;
+            ShowNotification("Item successfully updated.");
+        } catch {
+            ShowNotification("Error: Could not update item.", true);
+        }
+    }
+
+    // --- DELETE ITEM LOGIC ---
+
     [RelayCommand]
     private void DeleteSelectedItems(System.Collections.IList selectedItems) {
         if (selectedItems == null || selectedItems.Count == 0) return;
 
-        var itemsToDelete = selectedItems.Cast < InventoryItem > ().ToList();
+        var itemsToDelete = selectedItems.Cast<InventoryItem>().ToList();
         foreach(var item in itemsToDelete) {
             _repository.DeleteItem(item.ItemCode);
         }
@@ -214,16 +274,48 @@ public partial class MainViewModel: ObservableObject {
         ShowNotification($"{itemsToDelete.Count} item(s) deleted.");
     }
 
+    [ObservableProperty]
+    private bool _isDeleteDialogVisible;
+
+    private System.Collections.IList _itemsToDeletePending;
+
+    [RelayCommand]
+    private void OpenDeleteDialog(System.Collections.IList selectedItems) {
+        if (selectedItems == null || selectedItems.Count == 0) return;
+
+        _itemsToDeletePending = selectedItems;
+        IsDeleteDialogVisible = true;
+    }
+
+    [RelayCommand]
+    private void CloseDeleteDialog() => IsDeleteDialogVisible = false;
+
+    [RelayCommand]
+    private void ConfirmDelete() {
+        if (_itemsToDeletePending == null) return;
+
+        var itemsToDelete = _itemsToDeletePending.Cast < InventoryItem > ().ToList();
+        foreach(var item in itemsToDelete) {
+            _repository.DeleteItem(item.ItemCode);
+        }
+
+        IsDeleteDialogVisible = false;
+        LoadData();
+        ShowNotification($"{itemsToDelete.Count} item(s) deleted.");
+    }
+
+    // --- STOCK OUT LOGIC ---
+
     [RelayCommand]
     private void OpenStockOutDialog() {
         StockOutForm = new StockTransactionLog {
             ItemCode = SelectedItem?.ItemCode ?? string.Empty,
-                NameRequested = string.Empty,
-                ItemDescription = SelectedItem?.Description ?? string.Empty,
-                Date = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
-                TransactionType = "OUT",
-                Quantity = 1,
-                Remarks = string.Empty
+            NameRequested = string.Empty,
+            ItemDescription = SelectedItem?.Description ?? string.Empty,
+            Date = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
+            TransactionType = "OUT",
+            Quantity = 1,
+            Remarks = string.Empty
         };
         IsStockOutDialogVisible = true;
     }
@@ -235,6 +327,10 @@ public partial class MainViewModel: ObservableObject {
     private void SaveStockOut() {
         if (string.IsNullOrWhiteSpace(StockOutForm.ItemCode)) {
             ShowNotification("Error: Please select an item code!", true);
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(StockOutForm.NameRequested)) {
+            ShowNotification("Error: Name of Requester is required!", true);
             return;
         }
         try {
@@ -253,15 +349,17 @@ public partial class MainViewModel: ObservableObject {
         }
     }
 
+    // --- STOCK IN LOGIC ---
+
     [RelayCommand]
     private void OpenStockInDialog() {
         StockInForm = new StockTransactionLog {
             ItemCode = SelectedItem?.ItemCode ?? string.Empty,
-                ItemDescription = SelectedItem?.Description ?? string.Empty,
-                Date = System.DateTime.Now.ToString("dd-MMM-yy"),
-                TransactionType = "IN",
-                Quantity = 1,
-                Remarks = string.Empty
+            ItemDescription = SelectedItem?.Description ?? string.Empty,
+            Date = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
+            TransactionType = "IN",
+            Quantity = 1,
+            Remarks = string.Empty
         };
         IsStockInDialogVisible = true;
     }
@@ -285,18 +383,58 @@ public partial class MainViewModel: ObservableObject {
         }
     }
 
-    [RelayCommand]
-    private void DeleteSelectedLogs(System.Collections.IList selectedLogs) {
-        if (selectedLogs == null || selectedLogs.Count == 0) return;
+    [ObservableProperty]
+    private bool _isDeleteLogDialogVisible;
+    private System.Collections.IList _logsToDeletePending;
 
-        var logsToDelete = selectedLogs.Cast < StockTransactionLog > ().ToList();
+    [RelayCommand]
+    private void OpenDeleteLogDialog(System.Collections.IList selectedLogs) {
+        if (selectedLogs == null || selectedLogs.Count == 0) return;
+        
+        _logsToDeletePending = selectedLogs;
+        IsDeleteLogDialogVisible = true;
+    }
+
+    [RelayCommand]
+    private void CloseDeleteLogDialog() => IsDeleteLogDialogVisible = false;
+
+    [RelayCommand]
+    private void ConfirmDeleteLog() {
+        if (_logsToDeletePending == null) return;
+
+        var logsToDelete = _logsToDeletePending.Cast<StockTransactionLog>().ToList();
         foreach(var log in logsToDelete) {
             _repository.DeleteTransactionLog(log.TransactionId);
         }
+        
+        IsDeleteLogDialogVisible = false;
         LoadData();
         ShowNotification($"{logsToDelete.Count} log(s) deleted.");
     }
 
+    [RelayCommand]
+    private void HandleGlobalDelete() {
+        if (SelectedTabIndex == 0) {
+            if (IsDeleteDialogVisible) {
+                ConfirmDelete();
+            } else if (SelectedItem != null) {
+                var list = new System.Collections.Generic.List < InventoryItem > {
+                    SelectedItem
+                };
+                OpenDeleteDialog(list);
+            }
+        }
+        else if (SelectedTabIndex == 1) {
+            if (IsDeleteLogDialogVisible) {
+                ConfirmDeleteLog();
+            } else if (SelectedLog != null) {
+                var list = new System.Collections.Generic.List < StockTransactionLog > {
+                    SelectedLog
+                };
+                OpenDeleteLogDialog(list);
+            }
+        }
+    }
     public void UpdateItemInDatabase(InventoryItem item) {
         _repository.UpdateItem(item);
     }
@@ -318,7 +456,7 @@ public partial class MainViewModel: ObservableObject {
         }
     }
 
-    private async Task < IStorageProvider ? > GetStorageProvider() {
+    private async Task<IStorageProvider?> GetStorageProvider() {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             return desktop.MainWindow?.StorageProvider;
         }
@@ -333,15 +471,15 @@ public partial class MainViewModel: ObservableObject {
 
         var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions {
             Title = "Export Inventory Data",
-                DefaultExtension = ".xlsx",
-                SuggestedFileName = $"Inventory_Export_{DateTime.Now:yyyy-MM-dd}",
-                FileTypeChoices = new [] {
-                    new FilePickerFileType("Excel Workbook") {
-                        Patterns = new [] {
-                            "*.xlsx"
-                        }
+            DefaultExtension = ".xlsx",
+            SuggestedFileName = $"Inventory_Export_{DateTime.Now:yyyy-MM-dd}",
+            FileTypeChoices = new[] {
+                new FilePickerFileType("Excel Workbook") {
+                    Patterns = new[] {
+                        "*.xlsx"
                     }
                 }
+            }
         });
 
         if (file == null) return;
@@ -351,8 +489,7 @@ public partial class MainViewModel: ObservableObject {
             if (string.IsNullOrEmpty(filePath)) return;
 
             await Task.Run(() => {
-                using
-                var workbook = new XLWorkbook();
+                using var workbook = new XLWorkbook();
 
                 // ==========================================
                 // 1. FORMAT INVENTORY SHEET
@@ -360,8 +497,8 @@ public partial class MainViewModel: ObservableObject {
                 var invSheet = workbook.Worksheets.Add("Inventory Stock");
 
                 var logoCell = invSheet.Cell("B1");
-                logoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold().SetFontSize(16);;
-                logoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold().SetFontSize(16);;
+                logoCell.GetRichText().AddText("DTI-").SetFontColor(XLColor.FromHtml("#1F497D")).SetBold().SetFontSize(16);
+                logoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold().SetFontSize(16);
                 logoCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                 var deptCell = invSheet.Cell("E1");
@@ -437,7 +574,6 @@ public partial class MainViewModel: ObservableObject {
                     }
                 }
                 invSheet.Columns().AdjustToContents();
-
 
                 // ==========================================
                 // 2. FORMAT TRANSACTION LOG SHEETS
@@ -539,14 +675,14 @@ public partial class MainViewModel: ObservableObject {
 
         var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions {
             Title = "Import Inventory Data",
-                AllowMultiple = false,
-                FileTypeFilter = new [] {
-                    new FilePickerFileType("Excel Files") {
-                        Patterns = new [] {
-                            "*.xlsx"
-                        }
+            AllowMultiple = false,
+            FileTypeFilter = new[] {
+                new FilePickerFileType("Excel Files") {
+                    Patterns = new[] {
+                        "*.xlsx"
                     }
                 }
+            }
         });
 
         if (files == null || files.Count == 0) return;
@@ -560,12 +696,10 @@ public partial class MainViewModel: ObservableObject {
             int addedLogs = 0;
 
             await Task.Run(() => {
-                using
-                var workbook = new XLWorkbook(filePath);
+                using var workbook = new XLWorkbook(filePath);
 
                 // 1. IMPORT INVENTORY ITEMS
-                if (workbook.TryGetWorksheet("Inventory Stock", out
-                        var invSheet)) {
+                if (workbook.TryGetWorksheet("Inventory Stock", out var invSheet)) {
                     var rows = invSheet.RowsUsed().Skip(3);
 
                     foreach(var row in rows) {
@@ -574,16 +708,16 @@ public partial class MainViewModel: ObservableObject {
 
                         var item = new InventoryItem {
                             ItemCode = itemCode,
-                                Description = row.Cell(2).GetString(),
-                                ManufacturerSupplier = row.Cell(3).GetString(),
-                                AsOfDate = row.Cell(4).GetString(),
-                                InitialStock = row.Cell(5).TryGetValue < int > (out int initial) ? initial : 0,
-                                Stock_In = row.Cell(6).TryGetValue < int > (out int inStock) ? inStock : 0,
-                                Stock_Out = row.Cell(7).TryGetValue < int > (out int outStock) ? outStock : 0,
-                                Final_Stock = row.Cell(8).TryGetValue < int > (out int final) ? final : 0,
-                                Location = row.Cell(9).GetString(),
-                                Remarks = row.Cell(10).GetString(),
-                                Status = row.Cell(11).GetString()
+                            Description = row.Cell(2).GetString(),
+                            ManufacturerSupplier = row.Cell(3).GetString(),
+                            AsOfDate = row.Cell(4).GetString(),
+                            InitialStock = row.Cell(5).TryGetValue<int>(out int initial) ? initial : 0,
+                            Stock_In = row.Cell(6).TryGetValue<int>(out int inStock) ? inStock : 0,
+                            Stock_Out = row.Cell(7).TryGetValue<int>(out int outStock) ? outStock : 0,
+                            Final_Stock = row.Cell(8).TryGetValue<int>(out int final) ? final : 0,
+                            Location = row.Cell(9).GetString(),
+                            Remarks = row.Cell(10).GetString(),
+                            Status = row.Cell(11).GetString()
                         };
 
                         var existingItem = _fullInventoryList.FirstOrDefault(i => i.ItemCode == item.ItemCode);
@@ -610,12 +744,12 @@ public partial class MainViewModel: ObservableObject {
 
                             var log = new StockTransactionLog {
                                 Date = date,
-                                    NameRequested = row.Cell(2).GetString(),
-                                    ItemDescription = row.Cell(3).GetString(),
-                                    Quantity = row.Cell(4).TryGetValue < int > (out int q) ? q : 0,
-                                    TransactionType = row.Cell(5).GetString(),
-                                    ItemCode = itemCode,
-                                    Remarks = row.Cell(7).GetString()
+                                NameRequested = row.Cell(2).GetString(),
+                                ItemDescription = row.Cell(3).GetString(),
+                                Quantity = row.Cell(4).TryGetValue<int>(out int q) ? q : 0,
+                                TransactionType = row.Cell(5).GetString(),
+                                ItemCode = itemCode,
+                                Remarks = row.Cell(7).GetString()
                             };
 
                             bool isDuplicate = _fullTransactionLogs.Any(existing =>
