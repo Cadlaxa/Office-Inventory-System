@@ -62,5 +62,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Icon\**" />
+    <AvaloniaResource Include="Icon\app-icon.ico" />
   </ItemGroup>
+  
 </Project>

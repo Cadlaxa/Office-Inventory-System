@@ -34,62 +34,64 @@ public partial class MainWindow: Window {
         this.Title = $"Office Supplies Inventory System v{version.Major}.{version.Minor}.{version.Build}";
         LoadSettings();
         string appcastUrl = "https://github.com/Cadlaxa/Office-Inventory-System/releases/latest/download/appcast.xml";
-
-        // Dynamically set the executable name based on the OS
-        string executableName = "Office-Supplies-Inventory.exe";
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-            executableName = "Office-Supplies-Inventory"; // No .exe on Mac/Linux
-        }
-
-        _sparkle = new SparkleUpdater(appcastUrl, new Ed25519Checker(SecurityMode.Unsafe)) {
-            UIFactory = new NetSparkleUpdater.UI.Avalonia.UIFactory(Icon),
-            RestartExecutableName = executableName,
-            LogWriter = new FileLogger()
-        };
-
-        _sparkle.CloseApplication += () => {
-            // Forcefully and immediately kill the app to drop all file and database locks
-            System.Environment.Exit(0);
-        };
-
-        _sparkle.DownloadFinished += (item, path) => {
-            
-            // We only need to do this custom unzip bypass on Windows.
-            // Mac and Linux handle their .tar.gz files natively without issue!
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                
-                // GitHub strips the extension. We must rename the file to end in .zip so PowerShell can read it.
-                string zipPath = path + ".zip";
-                if (File.Exists(zipPath)) File.Delete(zipPath);
-                File.Move(path, zipPath);
-
-                // Set up our paths
-                string appDir = AppDomain.CurrentDomain.BaseDirectory;
-                string scriptPath = Path.Combine(Path.GetTempPath(), "netsparkle_powershell_update.cmd");
-                string exeName = "Office-Supplies-Inventory.exe";
-                string exePath = Path.Combine(appDir, exeName);
-
-                // Write a custom batch script that uses PowerShell to cleanly extract the files
-                string script = $@"@echo off
-echo Installing Office Supplies Inventory Update... Please wait.
-timeout /t 2 /nobreak > nul
-powershell.exe -Command ""Expand-Archive -Path '{zipPath}' -DestinationPath '{appDir}' -Force""
-start """" ""{exePath}""
-del ""{zipPath}""
-del ""%~f0""
-";
-                File.WriteAllText(scriptPath, script);
-
-                Process.Start(new ProcessStartInfo {
-                    FileName = scriptPath,
-                    UseShellExecute = true,
-                    CreateNoWindow = true
-                });
-                System.Environment.Exit(0);
-            }
-        };
         
-        _sparkle.StartLoop(true, true);
+        if (!Design.IsDesignMode) {
+            // Dynamically set the executable name based on the OS
+            string executableName = "Office-Supplies-Inventory.exe";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                executableName = "Office-Supplies-Inventory"; // No .exe on Mac/Linux
+            }
+
+            _sparkle = new SparkleUpdater(appcastUrl, new Ed25519Checker(SecurityMode.Unsafe)) {
+                UIFactory = new NetSparkleUpdater.UI.Avalonia.UIFactory(Icon),
+                RestartExecutableName = executableName,
+                LogWriter = new FileLogger()
+            };
+
+            _sparkle.CloseApplication += () => {
+                // Forcefully and immediately kill the app to drop all file and database locks
+                System.Environment.Exit(0);
+            };
+
+            _sparkle.DownloadFinished += (item, path) => {
+                
+                // We only need to do this custom unzip bypass on Windows.
+                // Mac and Linux handle their .tar.gz files natively without issue!
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                    
+                    // GitHub strips the extension. We must rename the file to end in .zip so PowerShell can read it.
+                    string zipPath = path + ".zip";
+                    if (File.Exists(zipPath)) File.Delete(zipPath);
+                    File.Move(path, zipPath);
+
+                    // Set up our paths
+                    string appDir = AppDomain.CurrentDomain.BaseDirectory;
+                    string scriptPath = Path.Combine(Path.GetTempPath(), "netsparkle_powershell_update.cmd");
+                    string exeName = "Office-Supplies-Inventory.exe";
+                    string exePath = Path.Combine(appDir, exeName);
+
+                    // Write a custom batch script that uses PowerShell to cleanly extract the files
+                    string script = $@"@echo off
+    echo Installing Office Supplies Inventory Update... Please wait.
+    timeout /t 2 /nobreak > nul
+    powershell.exe -Command ""Expand-Archive -Path '{zipPath}' -DestinationPath '{appDir}' -Force""
+    start """" ""{exePath}""
+    del ""{zipPath}""
+    del ""%~f0""
+    ";
+                    File.WriteAllText(scriptPath, script);
+
+                    Process.Start(new ProcessStartInfo {
+                        FileName = scriptPath,
+                        UseShellExecute = true,
+                        CreateNoWindow = true
+                    });
+                    System.Environment.Exit(0);
+                }
+            };
+            
+            _sparkle.StartLoop(true, true);
+        }
     }
 
     public void LoadSettings() {

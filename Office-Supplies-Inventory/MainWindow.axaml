@@ -31,7 +31,6 @@
             <Setter Property="RenderTransform" Value="scale(1.0)"/>
             <Setter Property="Transitions">
                 <Transitions>
-                    <!-- Smooth scaling and color fading, removed BoxShadow transition -->
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="QuadraticEaseOut"/>
                     <BrushTransition Property="Background" Duration="0:0:0.2"/>
                 </Transitions>
@@ -40,12 +39,12 @@
 
         <!-- Button Hover and Press Animations -->
         <Style Selector="Button.MaterialBtn:pointerover">
-            <!-- Smoothly enlarge on hover -->
-            <Setter Property="RenderTransform" Value="scale(1.03)"/>
+            <Setter Property="RenderTransform" Value="scale(1.02)"/>
+            <Setter Property="CornerRadius" Value="18"/>
         </Style>
         <Style Selector="Button.MaterialBtn:pressed">
-            <!-- Smoothly shrink when clicked -->
             <Setter Property="RenderTransform" Value="scale(0.96)"/>
+            <Setter Property="CornerRadius" Value="24"/>
         </Style>
 
         <!-- Google Material Accent Colors with Hover States -->
@@ -53,7 +52,7 @@
             <Setter Property="Background" Value="#1A73E8"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
-        <Style Selector="Button.Primary:pointerover">
+        <Style Selector="Button.Primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#1557B0"/>
         </Style>
 
@@ -61,7 +60,7 @@
             <Setter Property="Background" Value="#1E8E3E"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
-        <Style Selector="Button.Success:pointerover">
+        <Style Selector="Button.Success:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#145C26"/>
         </Style>
 
@@ -69,7 +68,7 @@
             <Setter Property="Background" Value="#D93025"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
-        <Style Selector="Button.Danger:pointerover">
+        <Style Selector="Button.Danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#A51F16"/>
         </Style>
 
@@ -77,7 +76,7 @@
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
         </Style>
-        <Style Selector="Button.Secondary:pointerover">
+        <Style Selector="Button.Secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
         </Style>
 
@@ -86,7 +85,6 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <!-- A subtle tint that perfectly adapts to Light/Dark mode -->
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
             <Setter Property="Transitions">
                 <Transitions>
@@ -96,26 +94,22 @@
             </Setter>
         </Style>
         
-        <!-- Smoothly darken the background on hover -->
         <Style Selector="TextBox:pointerover">
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
         </Style>
 
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="#1A73E8"/>
-            <!-- Reverts to solid background when actively typing -->
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
         </Style>
         
-        <!-- Subtle Section Headers -->
         <Style Selector="TextBlock.SectionHeader">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-            <Setter Property="Margin" Value="0,10,0,5"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
         </Style>
 
-        <!-- DataGrid Row Hover Animation -->
         <Style Selector="DataGridRow">
             <Setter Property="Transitions">
                 <Transitions>
@@ -155,14 +149,12 @@
             </Setter>
         </Style>
 
-        <!-- Dialog Backdrop (Visible/Open State) -->
         <Style Selector="Grid.DialogBackdrop.show">
             <Setter Property="Opacity" Value="1"/>
             <Setter Property="IsHitTestVisible" Value="True"/>
             <Setter Property="Background" Value="#B2000000"/>
         </Style>
 
-        <!-- Dialog Card (Base State & Transitions) -->
         <Style Selector="Grid.DialogBackdrop > Border.MaterialCard">
             <Setter Property="RenderTransformOrigin" Value="50%,50%"/>
             <Setter Property="Opacity" Value="0"/>
@@ -175,7 +167,6 @@
             </Setter>
         </Style>
 
-        <!-- Dialog Card (Visible/Open State) -->
         <Style Selector="Grid.DialogBackdrop.show > Border.MaterialCard">
             <Setter Property="Opacity" Value="1"/>
             <Setter Property="RenderTransform" Value="scale(1) translateY(0px)"/>
@@ -206,6 +197,56 @@
             <Setter Property="ShowDelay" Value="100"/>
             <Setter Property="ZIndex" Value="500"/>
         </Style>
+
+        <!-- Custom TabItem Styling (Rounded Button Look) -->
+        <Style Selector="TabItem">
+            <Setter Property="CornerRadius" Value="20,20,8,8"/> 
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Margin" Value="15,4,4,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RenderTransform" Value="scale(1.0)"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+                    <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.1"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="QuadraticEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Tab Selected State (Primary Button Look) -->
+        <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="#1A73E8"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="TabItem:selected:pointerover">
+            <Setter Property="Background" Value="#0d4b9c"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="20,20,20,20"/> 
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+        </Style>
+
+        <Style Selector="TabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="#1A73E8"/>
+        </Style>
+
+        <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
+        
+        <Style Selector="TabItem:pointerover /template/ Border#PART_SelectedPipe">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
+
+        <Style Selector="TabItem /template/ Border#PART_SelectedPipe">
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="Opacity" Value="0"/>
+        </Style>
     </Window.Styles>
 
     <Window.KeyBindings>
@@ -215,37 +256,39 @@
         <KeyBinding Command="{Binding HandleGlobalDeleteCommand}" Gesture="Delete"/>
     </Window.KeyBindings>
 
-    <Panel>
-        <StackPanel Orientation="Horizontal" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Top" 
-                Margin="0,20,20,0" 
-                Spacing="12"
-                ZIndex="50">
+    <Grid RowDefinitions="Auto, *">
+        
+        <!-- TOP NAVIGATION BAR -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" 
+                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" 
+                Padding="20,12" ZIndex="50">
+            <Grid ColumnDefinitions="Auto, *, Auto">
                 
-        <Image Source="/Icon/app-icon.ico" 
-               Width="36" Height="36" 
-               VerticalAlignment="Center" 
-               ToolTip.Tip="Made by CvSU OJT's"/>
-               
-        <!-- GLOBAL SEARCH BAR -->
-        <TextBox Text="{Binding SearchQuery}" 
-                 Watermark="🔍 Search records..." 
-                 Width="320"
-                 FontSize="14"
-                 Padding="16,8"
-                 VerticalAlignment="Center"
-                 Background="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
-        </StackPanel>
-                 
-        <TabControl Margin="10" x:Name="MainTabs" SelectedIndex="{Binding SelectedTabIndex}">
+                <!-- Icon and Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Image Source="/Icon/app-icon.ico" Width="40" Height="40" ToolTip.Tip="Made by CvSU OJT's"/>
+                    <TextBlock Text="Office Supplies Inventory" FontWeight="Black" FontSize="18" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Centered Search Bar -->
+                <TextBox Grid.Column="1" 
+                         Text="{Binding SearchQuery}" 
+                         Watermark="🔍 Search records..." 
+                         Width="500"
+                         FontSize="14"
+                         Padding="15,8"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <TabControl Grid.Row="1" Margin="0,0,0,10" x:Name="MainTabs" SelectedIndex="{Binding SelectedTabIndex}">
+            
             <!-- INVENTORY TAB -->
-            <TabItem Header="📦 Supplies Inventory" FontSize="22" FontWeight="Bold" ToolTip.Tip="Supplies Inventory [Ctrl + 1]">
-                <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,15,0,0">
+            <TabItem Header="Supplies Inventory" FontSize="18" FontWeight="Black" ToolTip.Tip="Supplies Inventory [Ctrl + 1]">
+                <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,0,0,0">
                     
-                    <!-- Rounded Container for DataGrid -->
                     <Border Grid.Column="0" Classes="MaterialCard" Margin="0,0,15,0" Padding="0" ClipToBounds="True">
-                        
                         <DataGrid x:Name="InventoryGrid"
                                   ItemsSource="{Binding InventoryList}" 
                                   SelectedItem="{Binding SelectedItem}"
@@ -268,75 +311,197 @@
                                 <Style Selector="DataGridColumnHeader">
                                     <Setter Property="FontSize" Value="13" />
                                     <Setter Property="FontWeight" Value="Bold" />
-                                    <Setter Property="Padding" Value="12,12" />
+                                    <Setter Property="Padding" Value="12,12,-20,12" />
                                     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 </Style>
                             </DataGrid.Styles>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding ItemCode}" IsReadOnly="True">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn IsReadOnly="True" MaxWidth="250">
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#D95E25" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="ITEM CODE" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ItemCode}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"
+                                                    ToolTip.Tip="{Binding ItemCode}"
+                                                    ToolTip.ShowDelay="300"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="DESCRIPTION" Binding="{Binding Description}"/>
-                                <DataGridTextColumn Header="MANUFACTURER" Binding="{Binding ManufacturerSupplier}" />
-                                <DataGridTextColumn Header="AS OF" Binding="{Binding AsOfDate}" />
+                                <DataGridTemplateColumn Header="DESCRIPTION" MaxWidth="250">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Description}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"
+                                                    ToolTip.Tip="{Binding Description}"
+                                                    ToolTip.ShowDelay="300"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Binding="{Binding InitialStock}">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn Header="MANUFACTURER" MaxWidth="250">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ManufacturerSupplier}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"
+                                                    ToolTip.Tip="{Binding ManufacturerSupplier}"
+                                                    ToolTip.ShowDelay="300"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="AS OF">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding AsOfDate}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"
+                                                    ToolTip.Tip="{Binding AsOfDate}"
+                                                    ToolTip.ShowDelay="300"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#AF37F5" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="IN STOCK" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding InitialStock}" Foreground="#AF37F5" FontWeight="Bold"  VerticalAlignment="Center" Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 
-                                <DataGridTextColumn Binding="{Binding Stock_In}" IsReadOnly="True">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#1E8E3E" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="IN" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Stock_In}" 
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip.Tip="{Binding Stock_In}"
+                                                    ToolTip.ShowDelay="300"
+                                                    Foreground="#107C41" 
+                                                    FontWeight="Bold" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Binding="{Binding Stock_Out}" IsReadOnly="True">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#D93025" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="OUT" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Stock_Out}" 
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip.Tip="{Binding Stock_Out}"
+                                                    ToolTip.ShowDelay="300"
+                                                    Foreground="#D13438" 
+                                                    FontWeight="Bold" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Binding="{Binding Final_Stock}" FontWeight="Bold" IsReadOnly="True">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#1A73E8" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="FINAL" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#0F6CBD" CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" Margin="12,0">
+                                                <TextBlock Text="{Binding Final_Stock}" 
+                                                        TextTrimming="CharacterEllipsis"
+                                                        ToolTip.Tip="{Binding Final_Stock}"
+                                                        ToolTip.ShowDelay="300"
+                                                        Foreground="White" 
+                                                        FontWeight="Bold" 
+                                                        VerticalAlignment="Center"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="LOCATION" Binding="{Binding Location}" />
-                                <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
-                                <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" />
+                                <DataGridTemplateColumn Header="LOCATION">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Location}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding Location}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="REMARKS">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Remarks}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding Remarks}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="STATUS">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Status}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding Status}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
 
                     <!-- Sidebar Actions (Material Card) -->
                     <Border Grid.Column="1" Classes="MaterialCard">
-                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Inventory Actions" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                <TextBlock Text="Inventory Actions" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 
                                 <TextBlock Text="Transactions" Classes="SectionHeader"/>
                                 <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in)"/>
                                 <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out)"/>
                                 
-                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
+                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
                                 <TextBlock Text="Manage Database" Classes="SectionHeader"/>
                                 <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item [Ctrl+N]"/>
@@ -345,74 +510,37 @@
                                         CommandParameter="{Binding #InventoryGrid.SelectedItems}"
                                         ToolTip.Tip="Delete selected inventory items [Delete]"/>
                                 
-                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,10"/>
+                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
                                 <TextBlock Text="System Utilities" Classes="SectionHeader"/>
 
-                                    <Grid ColumnDefinitions="*,*">
-                                        <Button Grid.Column="0" 
-                                                Classes="MaterialBtn Secondary" 
-                                                Command="{Binding ImportDataCommand}"
-                                                Margin="0,0,5,0"
-                                                HorizontalContentAlignment="Center"
-                                                ToolTip.Tip="Import data from xlsx file">
-                                            <Panel>
-                                                <!-- Default State -->
-                                                <TextBlock Text="📥 Import" 
-                                                        IsVisible="{Binding !IsImporting}" 
-                                                        HorizontalAlignment="Center"/>
-                                                
-                                                <!-- Loading State -->
-                                                <StackPanel Orientation="Horizontal" Spacing="16" 
-                                                            IsVisible="{Binding IsImporting}" 
-                                                            HorizontalAlignment="Center">
-                                                    <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
-                                                        Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Panel>
-                                        </Button>
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Classes="MaterialBtn Secondary" Command="{Binding ImportDataCommand}" Margin="0,0,5,0" HorizontalContentAlignment="Center" ToolTip.Tip="Import data from xlsx file">
+                                        <Panel>
+                                            <TextBlock Text="📥 Import" IsVisible="{Binding !IsImporting}" HorizontalAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsImporting}" HorizontalAlignment="Center">
+                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Panel>
+                                    </Button>
 
-                                        <Button Grid.Column="1" 
-                                                Classes="MaterialBtn Secondary" 
-                                                Command="{Binding ExportDataCommand}"
-                                                Margin="5,0,0,0"
-                                                HorizontalContentAlignment="Center"
-                                                ToolTip.Tip="Export data to xlsx file">
-                                            <Panel>
-                                                <!-- Default State -->
-                                                <TextBlock Text="📤 Export" 
-                                                        IsVisible="{Binding !IsExporting}" 
-                                                        HorizontalAlignment="Center"/>
-                                                
-                                                <!-- Loading State -->
-                                                <StackPanel Orientation="Horizontal" Spacing="16" 
-                                                            IsVisible="{Binding IsExporting}" 
-                                                            HorizontalAlignment="Center">
-                                                    <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" 
-                                                        Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Panel>
-                                        </Button>
-                                    </Grid>
+                                    <Button Grid.Column="1" Classes="MaterialBtn Secondary" Command="{Binding ExportDataCommand}" Margin="5,0,0,0" HorizontalContentAlignment="Center" ToolTip.Tip="Export data to xlsx file">
+                                        <Panel>
+                                            <TextBlock Text="📤 Export" IsVisible="{Binding !IsExporting}" HorizontalAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsExporting}" HorizontalAlignment="Center">
+                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Panel>
+                                    </Button>
+                                </Grid>
 
-                                <TextBlock Text="Settings" Classes="SectionHeader" Margin="0,15,0,0"/>
-                                    <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center" Margin="0,5,0,0">
-                                        <!-- Theme Toggle -->
-                                        <ToggleSwitch x:Name="ThemeToggle" 
-                                                    Grid.Column="0"
-                                                    OffContent="Light Mode" OnContent="Dark Mode" 
-                                                    IsChecked="False"
-                                                    Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled"
-                                                    ToolTip.Tip="Toggles Light or Dark Theme"/>
-                                        
-                                        <!-- Check for Updates Button -->
-                                        <Button Grid.Column="1" 
-                                                Content="🔄" 
-                                                Classes="MaterialBtn Secondary"
-                                                Width="60" 
-                                                Click="CheckForUpdates_Click"
-                                                ToolTip.Tip="Check for Updates"/>
-                                    </Grid>
+                                <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
+
+                                <TextBlock Text="Settings" Classes="SectionHeader" Margin="0,10,0,0"/>
+                                <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center" Margin="0,5,0,0">
+                                    <ToggleSwitch x:Name="ThemeToggle" Grid.Column="0" OffContent="Light Mode" OnContent="Dark Mode" IsChecked="False" Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled" ToolTip.Tip="Toggles Light or Dark Theme"/>
+                                    <Button Grid.Column="1" Content="🔄" Classes="MaterialBtn Secondary" Width="60" Click="CheckForUpdates_Click" ToolTip.Tip="Check for Updates"/>
+                                </Grid>
                             </StackPanel>
                         </ScrollViewer>
                     </Border>
@@ -420,7 +548,7 @@
             </TabItem>
 
             <!-- TRANSACTION LOG TAB -->
-            <TabItem Header="📋 Stock In/Out Log" FontSize="22" FontWeight="Bold" ToolTip.Tip="Stock In/Out Log [Ctrl + 2]">
+            <TabItem Header="Stock In/Out Log" FontSize="18" FontWeight="Black" ToolTip.Tip="Stock In/Out Log [Ctrl + 2]">
                 <Grid Classes="TabContainer" RowDefinitions="Auto, *">
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,15,0,15">
                         <Button Content="🗑️ Delete Selected Logs" 
@@ -454,42 +582,128 @@
                                 <Style Selector="DataGridColumnHeader">
                                     <Setter Property="FontSize" Value="13" />
                                     <Setter Property="FontWeight" Value="Bold" />
-                                    <Setter Property="Padding" Value="12,12" />
+                                    <Setter Property="Padding" Value="12,12,-20,12" />
                                     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 </Style>
                             </DataGrid.Styles>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding Date}" FontWeight="Bold">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#1A73E8" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="DATE" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Date}" 
+                                                    FontWeight="Bold" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding Date}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="NAME REQUESTED" Binding="{Binding NameRequested}" />
-                                <DataGridTextColumn Header="ITEM DESCRIPTION" Binding="{Binding ItemDescription}" Width="*" />
-                                <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" />
+                                <DataGridTemplateColumn Header="NAME REQUESTED">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding NameRequested}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding NameRequested}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Binding="{Binding TransactionType}">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn Header="ITEM DESCRIPTION" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ItemDescription}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding ItemDescription}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
+                                        <Border Background="#1E8E3E" CornerRadius="6" Padding="12,6" Margin="-4,0">
+                                            <TextBlock Text="QTY" Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Quantity}" 
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip.Tip="{Binding Quantity}"
+                                                    ToolTip.ShowDelay="300"
+                                                    Foreground="#107C41" 
+                                                    FontWeight="Bold" 
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#D93025" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="IN/OUT" Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TransactionType}" 
+                                                    Foreground="{Binding TransactionColor}"
+                                                    FontWeight="Bold"
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding TransactionType}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Binding="{Binding ItemCode}" IsReadOnly="True">
-                                    <DataGridTextColumn.Header>
+                                <DataGridTemplateColumn IsReadOnly="True">
+                                    <DataGridTemplateColumn.Header>
                                         <Border Background="#D95E25" CornerRadius="6" Padding="12,6" Margin="-4,0">
                                             <TextBlock Text="CODE / ITEM NO." Foreground="White" FontWeight="Bold"/>
                                         </Border>
-                                    </DataGridTextColumn.Header>
-                                </DataGridTextColumn>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ItemCode}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding ItemCode}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 
-                                <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" />
+                                <DataGridTemplateColumn Header="REMARKS" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Remarks}" 
+                                                    TextTrimming="CharacterEllipsis" 
+                                                    ToolTip.Tip="{Binding Remarks}"
+                                                    ToolTip.ShowDelay="300"
+                                                    VerticalAlignment="Center" 
+                                                    Margin="12,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
@@ -497,9 +711,9 @@
             </TabItem>
         </TabControl>
 
-        <!-- DIALOG OVERLAYS -->
+        <!-- DIALOG OVERLAYS (Added Grid.RowSpan="2" so they cover the Top Bar) -->
         <!-- Add Item Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsAddDialogVisible}">
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsAddDialogVisible}">
             <Border Classes="MaterialCard" Width="480" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add New Supply Item" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
@@ -516,7 +730,7 @@
                     <Grid ColumnDefinitions="*, *" Margin="0,5,0,0">
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="Initial Stock Level:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                            <TextBox Text="{Binding NewItemForm.InitialStock}" Watermark="e.g., 50"/>
+                            <TextBox Text="{Binding NewItemForm.InitialStockUI}" Watermark="e.g., 50"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
                             <TextBlock Text="Storage Location:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
@@ -536,31 +750,23 @@
         </Grid>
 
         <!-- Edit Item Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsEditDialogVisible}">
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsEditDialogVisible}">
             <Border Classes="MaterialCard" Width="520" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
-                <!-- Added a ScrollViewer just in case the screen resolution is small -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
                     <StackPanel Spacing="12" Margin="4">
-                        
-                        <!-- Title -->
                         <TextBlock Text="{Binding EditItemForm.ItemCode, StringFormat='Editing: {0}'}" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                         
-                        <!-- Description -->
                         <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                         <TextBox Text="{Binding EditItemForm.Description}" Watermark="e.g., Bond Paper (A4)"/>
 
-                        <!-- Manufacturer -->
                         <TextBlock Text="Manufacturer / Supplier:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                         <TextBox Text="{Binding EditItemForm.ManufacturerSupplier}" Watermark="e.g., DBM PS"/>
                         
                         <Grid ColumnDefinitions="*, *" Margin="0,5,0,0">
-                            <!-- Initial Stock (CRITICAL: Bound to InitialStockUI to use your custom error messages) -->
                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                 <TextBlock Text="Initial Stock Level:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 <TextBox Text="{Binding EditItemForm.InitialStockUI}" Watermark="e.g., 50"/>
                             </StackPanel>
-                            
-                            <!-- Location -->
                             <StackPanel Grid.Column="1" Margin="8,0,0,0">
                                 <TextBlock Text="Storage Location:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 <TextBox Text="{Binding EditItemForm.Location}" Watermark="e.g., Steel Cabinet"/>
@@ -568,13 +774,10 @@
                         </Grid>
 
                         <Grid ColumnDefinitions="*, *" Margin="0,5,0,0">
-                            <!-- As Of Date -->
                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                 <TextBlock Text="As Of Date:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 <TextBox Text="{Binding EditItemForm.AsOfDate}" Watermark="e.g., 2026-07-17"/>
                             </StackPanel>
-                            
-                            <!-- Status -->
                             <StackPanel Grid.Column="1" Margin="8,0,0,0">
                                 <TextBlock Text="Status:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 <TextBox Text="{Binding EditItemForm.Status}" Watermark="e.g., Active, Low Stock"/>
@@ -599,29 +802,24 @@
                             </Grid>
                         </Border>
 
-                        <!-- Remarks -->
                         <TextBlock Text="Remarks:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                         <TextBox Text="{Binding EditItemForm.Remarks}" Watermark="Optional notes..."/>
 
-                        <!-- Action Buttons -->
                         <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
                             <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseEditDialogCommand}" Margin="0,0,8,0" ToolTip.Tip="Cancel editing"/>
                             <Button Grid.Column="1" Content="💾 Save Changes" Classes="MaterialBtn Primary" Command="{Binding SaveEditedItemCommand}" Margin="8,0,0,0" ToolTip.Tip="Save changes to item"/>
                         </Grid>
-                        
                     </StackPanel>
                 </ScrollViewer>
             </Border>
         </Grid>
 
         <!-- Delete Confirmation Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsDeleteDialogVisible}">
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsDeleteDialogVisible}">
             <Border Classes="MaterialCard" Width="400" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="16">
                     <TextBlock Text="Confirm Deletion" FontWeight="Bold" FontSize="20" Foreground="#D93025"/>
-                    <TextBlock Text="Are you sure you want to permanently delete the selected items? This action cannot be undone." 
-                            TextWrapping="Wrap"/>
-                    
+                    <TextBlock Text="Are you sure you want to permanently delete the selected items? This action cannot be undone." TextWrapping="Wrap"/>
                     <Grid ColumnDefinitions="*, *" Margin="0,10,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseDeleteDialogCommand}" Margin="0,0,8,0"/>
                         <Button Grid.Column="1" Content="Yes, Delete" Classes="MaterialBtn Danger" Command="{Binding ConfirmDeleteCommand}" Margin="8,0,0,0" IsDefault="True"/>
@@ -631,13 +829,11 @@
         </Grid>
 
         <!-- Delete Log Confirmation Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsDeleteLogDialogVisible}">
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsDeleteLogDialogVisible}">
             <Border Classes="MaterialCard" Width="400" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="16">
                     <TextBlock Text="Delete Transaction Logs" FontWeight="Bold" FontSize="20" Foreground="#D93025"/>
-                    <TextBlock Text="Are you sure you want to permanently remove these transaction logs? This cannot be undone." 
-                            TextWrapping="Wrap"/>
-                    
+                    <TextBlock Text="Are you sure you want to permanently remove these transaction logs? This cannot be undone." TextWrapping="Wrap"/>
                     <Grid ColumnDefinitions="*, *" Margin="0,10,0,0">
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseDeleteLogDialogCommand}" Margin="0,0,8,0"/>
                         <Button Grid.Column="1" Content="Delete Logs" Classes="MaterialBtn Danger" Command="{Binding ConfirmDeleteLogCommand}" Margin="8,0,0,0" IsDefault="True"/>
@@ -647,11 +843,10 @@
         </Grid>
 
         <!-- Stock Out Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockOutDialogVisible}">
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsStockOutDialogVisible}">
             <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Log Supply Request (Out)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
-                    
                     <TextBlock Text="Item (Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <ComboBox ItemsSource="{Binding AllInventoryItems}" 
                             SelectedValue="{Binding StockOutForm.ItemCode}" 
@@ -668,7 +863,7 @@
                     <TextBox Text="{Binding StockOutForm.NameRequested}" Watermark="e.g., Juan Dela Cruz"/>
                     
                     <TextBlock Text="Quantity:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockOutForm.Quantity}" Watermark="e.g., 1"/>
+                    <TextBox Text="{Binding StockOutForm.QuantityUI}" Watermark="e.g., 1"/>
 
                     <TextBlock Text="Remarks:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockOutForm.Remarks}" Watermark="e.g., Received by employee"/>
@@ -682,11 +877,10 @@
         </Grid>
 
         <!-- Stock In Dialog -->
-        <Grid Classes="DialogBackdrop" Classes.show="{Binding IsStockInDialogVisible}">
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsStockInDialogVisible}">
             <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add Delivery (Stock In)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
-                    
                     <TextBlock Text="Select Item (Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <ComboBox ItemsSource="{Binding AllInventoryItems}" 
                             SelectedValue="{Binding StockInForm.ItemCode}" 
@@ -703,7 +897,7 @@
                     <TextBox Text="{Binding StockInForm.NameRequested}" Watermark="e.g., Office Depot"/>
                     
                     <TextBlock Text="Quantity Delivered:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockInForm.Quantity}" Watermark="e.g., 10"/>
+                    <TextBox Text="{Binding StockInForm.QuantityUI}" Watermark="e.g., 10"/>
 
                     <TextBlock Text="Remarks:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockInForm.Remarks}" Watermark="e.g., Monthly restocking"/>
@@ -717,7 +911,7 @@
         </Grid>
 
         <!-- SNACKBAR NOTIFICATION (Bottom Left) -->
-        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom"
+        <Border Grid.RowSpan="2" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                 Margin="24,24,24,32" Padding="16,12" CornerRadius="8"
                 Background="{Binding SnackbarColor}"
                 IsHitTestVisible="False"
@@ -726,7 +920,6 @@
                 ZIndex="200">
             <Border.Transitions>
                 <Transitions>
-                    <!-- Smooth fade in and out -->
                     <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
                 </Transitions>
             </Border.Transitions>
@@ -737,5 +930,5 @@
                            FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
-    </Panel>
+    </Grid>
 </Window>

@@ -225,7 +225,7 @@ public partial class MainViewModel : ObservableObject {
             ItemCode = SelectedItem.ItemCode,
             Description = SelectedItem.Description,
             ManufacturerSupplier = SelectedItem.ManufacturerSupplier,
-            InitialStockUI = SelectedItem.InitialStock.ToString(), // Pass integer to the UI string
+            InitialStockUI = SelectedItem.InitialStock.ToString(),
             Location = SelectedItem.Location,
             AsOfDate = SelectedItem.AsOfDate,
             Status = SelectedItem.Status,
