@@ -93,12 +93,34 @@
                 </Transitions>
             </Setter>
         </Style>
-        
+
         <Style Selector="TextBox:pointerover">
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
         </Style>
 
         <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="#1A73E8"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+        </Style>
+
+        <Style Selector="AutoCompleteBox">
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="AutoCompleteBox:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
+        </Style>
+
+        <Style Selector="AutoCompleteBox:focus">
             <Setter Property="BorderBrush" Value="#1A73E8"/>
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
         </Style>
@@ -270,15 +292,22 @@
                     <TextBlock Text="Office Supplies Inventory" FontWeight="Black" FontSize="18" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Centered Search Bar -->
-                <TextBox Grid.Column="1" 
-                         Text="{Binding SearchQuery}" 
-                         Watermark="🔍 Search records..." 
-                         Width="500"
-                         FontSize="14"
-                         Padding="15,8"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"/>
+                <AutoCompleteBox Grid.Column="1" 
+                    Text="{Binding SearchQuery}" 
+                    Watermark="🔍 Search (e.g. code:, name:, type:)..." 
+                    ItemsSource="{Binding SearchCommands}"
+                    MinimumPrefixLength="0"
+                    FilterMode="Contains"
+                    GotFocus="SearchBar_GotFocus"
+                    MaxDropDownHeight="250"
+                    MaxWidth="500"
+                    MinWidth="200"
+                    Margin="40,0"
+                    Height="38"
+                    FontSize="14"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    ToolTip.Tip= "Search any entries in Inventory or in Stock logs"/>
             </Grid>
         </Border>
 
@@ -292,6 +321,7 @@
                         <DataGrid x:Name="InventoryGrid"
                                   ItemsSource="{Binding InventoryList}" 
                                   SelectedItem="{Binding SelectedItem}"
+                                  SelectionChanged="DataGrid_SelectionChanged"
                                   SelectionMode="Extended"
                                   AutoGenerateColumns="False" 
                                   IsReadOnly="True" 
@@ -326,7 +356,10 @@
                                     </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
+                                            <!-- Added Foreground and FontWeight here -->
                                             <TextBlock Text="{Binding ItemCode}" 
+                                                    Foreground="#D95E25"
+                                                    FontWeight="SemiBold"
                                                     TextTrimming="CharacterEllipsis" 
                                                     VerticalAlignment="Center" 
                                                     Margin="12,0"
@@ -550,19 +583,22 @@
             <!-- TRANSACTION LOG TAB -->
             <TabItem Header="Stock In/Out Log" FontSize="18" FontWeight="Black" ToolTip.Tip="Stock In/Out Log [Ctrl + 2]">
                 <Grid Classes="TabContainer" RowDefinitions="Auto, *">
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,15,0,15">
+                    <Grid Grid.Row="0" Margin="12,3,10,3">
                         <Button Content="🗑️ Delete Selected Logs" 
                                 Classes="MaterialBtn Danger"
-                                HorizontalAlignment="Left" Width="220"
+                                HorizontalAlignment="Right" 
+                                Width="220"
                                 Command="{Binding OpenDeleteLogDialogCommand}" 
                                 CommandParameter="{Binding #TransactionLogGrid.SelectedItems}"
                                 ToolTip.Tip="Delete selected transaction logs [Delete]"/>
-                    </StackPanel>
+                                
+                    </Grid>
 
                     <Border Grid.Row="1" Classes="MaterialCard" Padding="0" ClipToBounds="True">
                         <DataGrid x:Name="TransactionLogGrid"
                                   ItemsSource="{Binding TransactionLogs}"
                                   SelectedItem="{Binding SelectedLog}"
+                                  SelectionChanged="DataGrid_SelectionChanged"
                                   SelectionMode="Extended"
                                   AutoGenerateColumns="False" 
                                   IsReadOnly="False" 
@@ -606,6 +642,13 @@
                                                     Margin="12,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <!-- cell text box direct edit -->
+                                            <TextBox Text="{Binding Date}" VerticalAlignment="Center" Margin="4"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn Header="NAME REQUESTED">
@@ -619,6 +662,13 @@
                                                     Margin="12,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <!-- cell text box direct edit -->
+                                            <TextBox Text="{Binding NameRequested}" VerticalAlignment="Center" Margin="4"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn Header="ITEM DESCRIPTION" Width="*">
@@ -632,6 +682,13 @@
                                                     Margin="12,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <!-- cell text box direct edit -->
+                                            <TextBox Text="{Binding ItemDescription}" VerticalAlignment="Center" Margin="4"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn>
@@ -652,6 +709,13 @@
                                                     Margin="12,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <!-- cell text box direct edit -->
+                                            <TextBox Text="{Binding Quantity}" VerticalAlignment="Center" Margin="4"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn>
@@ -682,7 +746,10 @@
                                     </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
+                                            <!-- Added Foreground and FontWeight here -->
                                             <TextBlock Text="{Binding ItemCode}" 
+                                                    Foreground="#D95E25"
+                                                    FontWeight="SemiBold"
                                                     TextTrimming="CharacterEllipsis" 
                                                     ToolTip.Tip="{Binding ItemCode}"
                                                     ToolTip.ShowDelay="300"
@@ -692,7 +759,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 
-                                <DataGridTemplateColumn Header="REMARKS" Width="*">
+                                <DataGridTemplateColumn Header="REMARKS">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Remarks}" 
@@ -703,6 +770,13 @@
                                                     Margin="12,0"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
+
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <!-- cell text box direct edit -->
+                                            <TextBox Text="{Binding Remarks}" VerticalAlignment="Center" Margin="4"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -928,6 +1002,26 @@
                            Background="#40FFFFFF" Padding="6,0" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding SnackbarMessage}" Foreground="White" 
                            FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ITEM SELECTION SNACKBAR (Top Right) -->
+        <Border Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Top"
+                Margin="0,70,12,24" Padding="10,10" CornerRadius="8"
+                Background="{Binding SelectionSnackbarColor}"
+                IsHitTestVisible="False"
+                BoxShadow="0 6 16 0 #40000000"
+                Opacity="{Binding SelectionSnackbarOpacity}"
+                ZIndex="200">
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
+                </Transitions>
+            </Border.Transitions>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="📌" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding SelectionSnackbarMessage}" Foreground="White" 
+                        FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
     </Grid>

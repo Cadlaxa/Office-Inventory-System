@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Threading;
 using System;
+using System.Threading.Tasks;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
@@ -204,6 +205,54 @@ public partial class MainWindow: Window {
                 InventoryGrid.ScrollIntoView(itemToFocus, null);
             }
         });
+    }
+
+    public async void ScrollToBottomOfLog() {
+        if (this.DataContext is MainViewModel vm) {
+            vm.SelectedTabIndex = 1; 
+        }
+        await Task.Delay(200); 
+        var itemsEnumerable = TransactionLogGrid.ItemsSource as System.Collections.IEnumerable;
+        var lastItem = itemsEnumerable?.Cast<StockTransactionLog>().LastOrDefault();
+        if (lastItem != null) {
+            TransactionLogGrid.SelectedItem = lastItem;
+            TransactionLogGrid.ScrollIntoView(lastItem, null);
+        }
+    }
+
+    private void SearchBar_GotFocus(object ? sender, Avalonia.Input.GotFocusEventArgs e) {
+        // When the user clicks the search bar, instantly open the command dropdown
+        if (sender is Avalonia.Controls.AutoCompleteBox searchBox) {
+            Dispatcher.UIThread.InvokeAsync(() => {
+                searchBox.IsDropDownOpen = true;
+            });
+        }
+    }
+
+    private void DataGrid_SelectionChanged(object ? sender, Avalonia.Controls.SelectionChangedEventArgs e) {
+        if (sender is Avalonia.Controls.DataGrid grid && this.DataContext is MainViewModel vm) {
+            vm.CurrentSelectedItems = grid.SelectedItems;
+            if (grid.SelectedItem != null) {
+                grid.ScrollIntoView(grid.SelectedItem, null);
+            }
+            int count = grid.SelectedItems.Count;
+
+            if (count > 3) {
+                vm.ShowSelectionNotification($"{count} items selected");
+            } else if (count >= 1 && count <= 3) {
+                var selectedCodes = new System.Collections.Generic.List < string > ();
+
+                foreach(var selectedObj in grid.SelectedItems) {
+                    if (selectedObj is InventoryItem item) {
+                        selectedCodes.Add(item.ItemCode);
+                    } else if (selectedObj is StockTransactionLog log) {
+                        selectedCodes.Add(log.ItemCode);
+                    }
+                }
+                string joinedCodes = string.Join(", ", selectedCodes);
+                vm.ShowSelectionNotification($"Selected: {joinedCodes}");
+            }
+        }
     }
 
     private void Window_KeyDown(object? sender, KeyEventArgs e) {

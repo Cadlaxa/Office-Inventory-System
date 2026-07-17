@@ -81,6 +81,7 @@ public partial class MainViewModel : ObservableObject {
 
     [ObservableProperty]
     private int _selectedTabIndex = 0; 
+    public System.Collections.IList CurrentSelectedItems { get; set; }
 
     [RelayCommand]
     private void SwitchTab(string index) {
@@ -98,6 +99,25 @@ public partial class MainViewModel : ObservableObject {
             }
         }
     }
+
+    public List<string> SearchCommands { get;} = 
+        new List<string> {
+            "name: ",
+            "code: ",
+            "desc: ",
+            "type: ",
+            "mfg: ",
+            "asf: ",
+            "instock: ",
+            "in: ",
+            "out: ",
+            "final: ",
+            "loc: ",
+            "remark: ",
+            "status: ",
+            "date: ",
+            "qty: "
+    };
 
     public MainViewModel() {
         AppVersion = "1.0.0";
@@ -133,35 +153,72 @@ public partial class MainViewModel : ObservableObject {
 
     private void FilterData() {
         if (string.IsNullOrWhiteSpace(SearchQuery)) {
-            InventoryList = new ObservableCollection<InventoryItem>(_fullInventoryList);
-            TransactionLogs = new ObservableCollection<StockTransactionLog>(_fullTransactionLogs);
+            // Reset both lists if search is empty
+            InventoryList = new ObservableCollection < InventoryItem > (_fullInventoryList);
+            TransactionLogs = new ObservableCollection < StockTransactionLog > (_fullTransactionLogs);
             return;
         }
 
-        var query = SearchQuery.ToLower();
+        var query = SearchQuery.ToLower().Trim();
 
-        // Filter Inventory
-        var filteredInventory = _fullInventoryList.Where(item =>
-            (item.ItemCode?.ToLower().Contains(query) == true) ||
-            (item.Description?.ToLower().Contains(query) == true) ||
-            (item.ManufacturerSupplier?.ToLower().Contains(query) == true) ||
-            (item.Location?.ToLower().Contains(query) == true) ||
-            (item.Remarks?.ToLower().Contains(query) == true)
-        ).ToList();
+        // 1. FILTER INVENTORY
+        var filteredInventory = _fullInventoryList.Where(item => {
+            // Discord-Style Prefixes
+            if (query.StartsWith("code:")) return item.ItemCode?.ToLower().Contains(query.Replace("code:", "").Trim()) == true;
+            if (query.StartsWith("desc:")) return item.Description?.ToLower().Contains(query.Replace("desc:", "").Trim()) == true;
+            if (query.StartsWith("mfg:")) return item.ManufacturerSupplier?.ToLower().Contains(query.Replace("mfg:", "").Trim()) == true;
+            if (query.StartsWith("asf:")) return item.AsOfDate?.ToLower().Contains(query.Replace("asf:", "").Trim()) == true;
+            if (query.StartsWith("instock:")) return item.InitialStockUI?.ToLower().Contains(query.Replace("instock:", "").Trim()) == true;
+            if (query.StartsWith("in:")) return item.Stock_In.ToString().ToLower().Contains(query.Replace("in:", "").Trim()) == true;
+            if (query.StartsWith("out:")) return item.Stock_Out.ToString().ToLower().Contains(query.Replace("out:", "").Trim()) == true;
+            if (query.StartsWith("final:")) return item.Final_Stock.ToString().ToLower().Contains(query.Replace("final:", "").Trim()) == true;
+            if (query.StartsWith("loc:")) return item.Location?.ToLower().Contains(query.Replace("loc:", "").Trim()) == true;
+            if (query.StartsWith("remark:")) return item.Remarks?.ToLower().Contains(query.Replace("remark:", "").Trim()) == true;
+            if (query.StartsWith("status:")) return item.Status?.ToLower().Contains(query.Replace("status:", "").Trim()) == true;
 
-        InventoryList = new ObservableCollection<InventoryItem>(filteredInventory);
+            // Normal Search (Fallback if no prefix is used)
+            return (item.ItemCode?.ToLower().Contains(query) == true) ||
+                (item.Description?.ToLower().Contains(query) == true) ||
+                (item.ManufacturerSupplier?.ToLower().Contains(query) == true) ||
+                (item.Location?.ToLower().Contains(query) == true) ||
+                (item.Remarks?.ToLower().Contains(query) == true);
+        }).ToList();
 
-        // Filter Transaction Logs
-        var filteredLogs = _fullTransactionLogs.Where(log =>
-            (log.ItemCode?.ToLower().Contains(query) == true) ||
-            (log.ItemDescription?.ToLower().Contains(query) == true) ||
-            (log.NameRequested?.ToLower().Contains(query) == true) ||
-            (log.TransactionType?.ToLower().Contains(query) == true) ||
-            (log.Date?.ToLower().Contains(query) == true) ||
-            (log.Remarks?.ToLower().Contains(query) == true)
-        ).ToList();
+        InventoryList = new ObservableCollection < InventoryItem > (filteredInventory);
 
-        TransactionLogs = new ObservableCollection<StockTransactionLog>(filteredLogs);
+        // 2. FILTER TRANSACTION LOGS
+        var filteredLogs = _fullTransactionLogs.Where(log => {
+            // Discord-Style Prefixes
+            if (query.StartsWith("date:")) return log.Date?.ToLower().Contains(query.Replace("date:", "").Trim()) == true;
+            if (query.StartsWith("name:")) return log.NameRequested?.ToLower().Contains(query.Replace("name:", "").Trim()) == true;
+            if (query.StartsWith("desc:")) return log.ItemDescription?.ToLower().Contains(query.Replace("desc:", "").Trim()) == true;
+            if (query.StartsWith("code:")) return log.ItemCode?.ToLower().Contains(query.Replace("code:", "").Trim()) == true;
+            if (query.StartsWith("type:")) return log.TransactionType?.ToLower().Contains(query.Replace("type:", "").Trim()) == true;
+            if (query.StartsWith("qty:")) return log.Quantity.ToString().Contains(query.Replace("qty:", "").Trim());
+            if (query.StartsWith("remark:")) return log.Remarks?.ToLower().Contains(query.Replace("remark:", "").Trim()) == true;
+
+            // Normal Search (Fallback if no prefix is used)
+            return (log.ItemCode?.ToLower().Contains(query) == true) ||
+                (log.ItemDescription?.ToLower().Contains(query) == true) ||
+                (log.NameRequested?.ToLower().Contains(query) == true) ||
+                (log.TransactionType?.ToLower().Contains(query) == true) ||
+                (log.Date?.ToLower().Contains(query) == true) ||
+                (log.Remarks?.ToLower().Contains(query) == true);
+        }).ToList();
+
+        TransactionLogs = new ObservableCollection < StockTransactionLog > (filteredLogs);
+
+        bool foundInInventory = filteredInventory.Count > 0;
+        bool foundInLogs = filteredLogs.Count > 0;
+
+        if (!string.IsNullOrWhiteSpace(query)) {
+            if (SelectedTabIndex == 0 && !foundInInventory && foundInLogs) {
+                SelectedTabIndex = 1;
+            }
+            else if (SelectedTabIndex == 1 && !foundInLogs && foundInInventory) {
+                SelectedTabIndex = 0;
+            }
+        }
     }
 
     // --- ADD ITEM LOGIC ---
@@ -339,10 +396,16 @@ public partial class MainViewModel : ObservableObject {
                 ShowNotification($"Insufficient stock! Only {currentItem.Final_Stock} available.", true);
                 return;
             }
-
+            string savedItemCode = StockOutForm.ItemCode;
             _repository.ProcessTransaction(StockOutForm);
             LoadData();
             IsStockOutDialogVisible = false;
+
+            if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                if (desktop.MainWindow is MainWindow mainWindow) {
+                    mainWindow.ScrollToBottomOfLog();
+                }
+            }
             ShowNotification("Stock out request logged successfully.");
         } catch {
             ShowNotification("Error: Failed to log stock out.", true);
@@ -374,9 +437,16 @@ public partial class MainViewModel : ObservableObject {
             return;
         }
         try {
+            string savedItemCode = StockInForm.ItemCode;
             _repository.ProcessTransaction(StockInForm);
-            LoadData();
+            LoadData(); 
             IsStockInDialogVisible = false;
+            
+            if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                if (desktop.MainWindow is MainWindow mainWindow) {
+                    mainWindow.ScrollToBottomOfLog();
+                }
+            }
             ShowNotification("Delivery (Stock In) added successfully.");
         } catch {
             ShowNotification("Error: Failed to add delivery.", true);
@@ -417,16 +487,21 @@ public partial class MainViewModel : ObservableObject {
         if (SelectedTabIndex == 0) {
             if (IsDeleteDialogVisible) {
                 ConfirmDelete();
+            } else if (CurrentSelectedItems != null && CurrentSelectedItems.Count > 0) {
+                // Pass the entire list of selected rows to the dialog!
+                OpenDeleteDialog(CurrentSelectedItems);
             } else if (SelectedItem != null) {
+                // Safe fallback if only one item is selected
                 var list = new System.Collections.Generic.List < InventoryItem > {
                     SelectedItem
                 };
                 OpenDeleteDialog(list);
             }
-        }
-        else if (SelectedTabIndex == 1) {
+        } else if (SelectedTabIndex == 1) {
             if (IsDeleteLogDialogVisible) {
                 ConfirmDeleteLog();
+            } else if (CurrentSelectedItems != null && CurrentSelectedItems.Count > 0) {
+                OpenDeleteLogDialog(CurrentSelectedItems);
             } else if (SelectedLog != null) {
                 var list = new System.Collections.Generic.List < StockTransactionLog > {
                     SelectedLog
@@ -435,6 +510,7 @@ public partial class MainViewModel : ObservableObject {
             }
         }
     }
+
     public void UpdateItemInDatabase(InventoryItem item) {
         _repository.UpdateItem(item);
     }
@@ -456,6 +532,46 @@ public partial class MainViewModel : ObservableObject {
         }
     }
 
+    // --- PROPERTIES FOR TOP-LEFT SNACKBAR ---
+    private double _selectionSnackbarOpacity = 0.0;
+    public double SelectionSnackbarOpacity {
+        get => _selectionSnackbarOpacity;
+        set {
+            _selectionSnackbarOpacity = value;
+            OnPropertyChanged(nameof(SelectionSnackbarOpacity));
+        }
+    }
+
+    private string _selectionSnackbarMessage;
+    public string SelectionSnackbarMessage {
+        get => _selectionSnackbarMessage;
+        set {
+            _selectionSnackbarMessage = value;
+            OnPropertyChanged(nameof(SelectionSnackbarMessage));
+        }
+    }
+
+    private string _selectionSnackbarColor = "#1A73E8";
+    public string SelectionSnackbarColor {
+        get => _selectionSnackbarColor;
+        set {
+            _selectionSnackbarColor = value;
+            OnPropertyChanged(nameof(SelectionSnackbarColor));
+        }
+    }
+
+    public async void ShowSelectionNotification(string message, bool isError = false) {
+        SelectionSnackbarMessage = message;
+        // Blue for normal selection, Red if there's an error
+        SelectionSnackbarColor = isError ? "#D93025" : "#1A73E8";
+        // Fade in
+        SelectionSnackbarOpacity = 1.0;
+        // Wait 2.5 seconds
+        await Task.Delay(2500);
+        // Fade out
+        SelectionSnackbarOpacity = 0.0;
+    }
+    
     private async Task<IStorageProvider?> GetStorageProvider() {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             return desktop.MainWindow?.StorageProvider;
@@ -680,9 +796,7 @@ public partial class MainViewModel : ObservableObject {
             AllowMultiple = false,
             FileTypeFilter = new[] {
                 new FilePickerFileType("Excel Files") {
-                    Patterns = new[] {
-                        "*.xlsx"
-                    }
+                    Patterns = new[] { "*.xlsx" }
                 }
             }
         });
@@ -699,6 +813,7 @@ public partial class MainViewModel : ObservableObject {
 
             await Task.Run(() => {
                 using var workbook = new XLWorkbook(filePath);
+                var exactExcelItems = new System.Collections.Generic.List<InventoryItem>();
 
                 // 1. IMPORT INVENTORY ITEMS
                 if (workbook.TryGetWorksheet("Inventory Stock", out var invSheet)) {
@@ -721,6 +836,7 @@ public partial class MainViewModel : ObservableObject {
                             Remarks = row.Cell(10).GetString(),
                             Status = row.Cell(11).GetString()
                         };
+                        exactExcelItems.Add(item);
 
                         var existingItem = _fullInventoryList.FirstOrDefault(i => i.ItemCode == item.ItemCode);
                         if (existingItem != null) {
@@ -766,6 +882,11 @@ public partial class MainViewModel : ObservableObject {
                                 addedLogs++;
                             }
                         }
+                    }
+                }
+                if (addedLogs > 0) {
+                    foreach (var originalItem in exactExcelItems) {
+                        _repository.UpdateItem(originalItem);
                     }
                 }
             });
