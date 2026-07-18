@@ -31,8 +31,7 @@ Simple offline inventory system made with Avalonia UI
   
 # Search Functions
 - The search bar will provide search clips to easily find the exact entry from the Inventory or the Stock grid
-  <img width="636" height="350" alt="image" src="https://github.com/user-attachments/assets/db7905f9-ba1b-4dec-9d6c-132100d8191c" />
-
+  <img width="575" height="93" alt="image" src="https://github.com/user-attachments/assets/654cf1c5-13b7-4288-b5ef-80c54161d719" />
 
 # Todo:
 - [x] Simple CRUD functions
