@@ -111,7 +111,7 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
