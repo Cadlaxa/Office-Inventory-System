@@ -100,6 +100,25 @@ public partial class MainViewModel : ObservableObject {
         }
     }
 
+    public partial class SearchToken: ObservableObject {
+        [ObservableProperty]
+        private string _prefix; // e.g., "from:" or "code:"
+
+        [ObservableProperty]
+        private string _value; // e.g., "cadlaxa" or "123"
+    }
+
+    [ObservableProperty]
+    private ObservableCollection < SearchToken > _activeSearchTokens = new();
+
+    [RelayCommand]
+    private void RemoveSearchToken(SearchToken token) {
+        if (token != null) {
+            ActiveSearchTokens.Remove(token);
+            FilterData();
+        }
+    }
+
     public List<string> SearchCommands { get;} = 
         new List<string> {
             "name: ",
@@ -118,6 +137,47 @@ public partial class MainViewModel : ObservableObject {
             "date: ",
             "qty: "
     };
+
+    [RelayCommand]
+    private void CommitSearchToken() {
+        var query = SearchQuery?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(query)) return;
+
+        var validPrefixes = new [] {
+            "code:",
+            "desc:",
+            "mfg:",
+            "asf:",
+            "instock:",
+            "in:",
+            "out:",
+            "final:",
+            "loc:",
+            "remark:",
+            "status:",
+            "date:",
+            "name:",
+            "type:",
+            "qty:"
+        };
+        string foundPrefix = validPrefixes.FirstOrDefault(p => query.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+
+        if (foundPrefix != null) {
+            string val = query.Substring(foundPrefix.Length).Trim();
+            if (!string.IsNullOrWhiteSpace(val)) {
+                // Add as a specific command token
+                ActiveSearchTokens.Add(new SearchToken {
+                    Prefix = foundPrefix, Value = val
+                });
+            }
+        } else {
+            // Add as a normal global search token
+            ActiveSearchTokens.Add(new SearchToken {
+                Prefix = "search:", Value = query
+            });
+        }
+        SearchQuery = string.Empty;
+    }
 
     public MainViewModel() {
         AppVersion = "1.0.0";
@@ -152,72 +212,107 @@ public partial class MainViewModel : ObservableObject {
     }
 
     private void FilterData() {
-        if (string.IsNullOrWhiteSpace(SearchQuery)) {
-            // Reset both lists if search is empty
-            InventoryList = new ObservableCollection < InventoryItem > (_fullInventoryList);
-            TransactionLogs = new ObservableCollection < StockTransactionLog > (_fullTransactionLogs);
-            return;
+        IEnumerable<InventoryItem> filteredInventory = _fullInventoryList;
+        IEnumerable<StockTransactionLog> filteredLogs = _fullTransactionLogs;
+
+        var allFilters = new List<(string Prefix, string Value)>();
+
+        foreach(var token in ActiveSearchTokens) {
+            allFilters.Add((token.Prefix.ToLower(), token.Value.ToLower()));
         }
 
-        var query = SearchQuery.ToLower().Trim();
+        string liveQuery = SearchQuery?.ToLower().Trim() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(liveQuery)) {
+            var validPrefixes = new [] {
+                "code:", "desc:", "mfg:", "asf:", "instock:", "in:", "out:", 
+                "final:", "loc:", "remark:", "status:", "date:", "name:", "type:", "qty:"
+            };
+            string foundPrefix = validPrefixes.FirstOrDefault(p => liveQuery.StartsWith(p));
 
-        // 1. FILTER INVENTORY
-        var filteredInventory = _fullInventoryList.Where(item => {
-            // Discord-Style Prefixes
-            if (query.StartsWith("code:")) return item.ItemCode?.ToLower().Contains(query.Replace("code:", "").Trim()) == true;
-            if (query.StartsWith("desc:")) return item.Description?.ToLower().Contains(query.Replace("desc:", "").Trim()) == true;
-            if (query.StartsWith("mfg:")) return item.ManufacturerSupplier?.ToLower().Contains(query.Replace("mfg:", "").Trim()) == true;
-            if (query.StartsWith("asf:")) return item.AsOfDate?.ToLower().Contains(query.Replace("asf:", "").Trim()) == true;
-            if (query.StartsWith("instock:")) return item.InitialStockUI?.ToLower().Contains(query.Replace("instock:", "").Trim()) == true;
-            if (query.StartsWith("in:")) return item.Stock_In.ToString().ToLower().Contains(query.Replace("in:", "").Trim()) == true;
-            if (query.StartsWith("out:")) return item.Stock_Out.ToString().ToLower().Contains(query.Replace("out:", "").Trim()) == true;
-            if (query.StartsWith("final:")) return item.Final_Stock.ToString().ToLower().Contains(query.Replace("final:", "").Trim()) == true;
-            if (query.StartsWith("loc:")) return item.Location?.ToLower().Contains(query.Replace("loc:", "").Trim()) == true;
-            if (query.StartsWith("remark:")) return item.Remarks?.ToLower().Contains(query.Replace("remark:", "").Trim()) == true;
-            if (query.StartsWith("status:")) return item.Status?.ToLower().Contains(query.Replace("status:", "").Trim()) == true;
-
-            // Normal Search (Fallback if no prefix is used)
-            return (item.ItemCode?.ToLower().Contains(query) == true) ||
-                (item.Description?.ToLower().Contains(query) == true) ||
-                (item.ManufacturerSupplier?.ToLower().Contains(query) == true) ||
-                (item.Location?.ToLower().Contains(query) == true) ||
-                (item.Remarks?.ToLower().Contains(query) == true);
-        }).ToList();
-
-        InventoryList = new ObservableCollection < InventoryItem > (filteredInventory);
-
-        // 2. FILTER TRANSACTION LOGS
-        var filteredLogs = _fullTransactionLogs.Where(log => {
-            // Discord-Style Prefixes
-            if (query.StartsWith("date:")) return log.Date?.ToLower().Contains(query.Replace("date:", "").Trim()) == true;
-            if (query.StartsWith("name:")) return log.NameRequested?.ToLower().Contains(query.Replace("name:", "").Trim()) == true;
-            if (query.StartsWith("desc:")) return log.ItemDescription?.ToLower().Contains(query.Replace("desc:", "").Trim()) == true;
-            if (query.StartsWith("code:")) return log.ItemCode?.ToLower().Contains(query.Replace("code:", "").Trim()) == true;
-            if (query.StartsWith("type:")) return log.TransactionType?.ToLower().Contains(query.Replace("type:", "").Trim()) == true;
-            if (query.StartsWith("qty:")) return log.Quantity.ToString().Contains(query.Replace("qty:", "").Trim());
-            if (query.StartsWith("remark:")) return log.Remarks?.ToLower().Contains(query.Replace("remark:", "").Trim()) == true;
-
-            // Normal Search (Fallback if no prefix is used)
-            return (log.ItemCode?.ToLower().Contains(query) == true) ||
-                (log.ItemDescription?.ToLower().Contains(query) == true) ||
-                (log.NameRequested?.ToLower().Contains(query) == true) ||
-                (log.TransactionType?.ToLower().Contains(query) == true) ||
-                (log.Date?.ToLower().Contains(query) == true) ||
-                (log.Remarks?.ToLower().Contains(query) == true);
-        }).ToList();
-
-        TransactionLogs = new ObservableCollection < StockTransactionLog > (filteredLogs);
-
-        bool foundInInventory = filteredInventory.Count > 0;
-        bool foundInLogs = filteredLogs.Count > 0;
-
-        if (!string.IsNullOrWhiteSpace(query)) {
-            if (SelectedTabIndex == 0 && !foundInInventory && foundInLogs) {
-                SelectedTabIndex = 1;
+            if (foundPrefix != null) {
+                string val = liveQuery.Substring(foundPrefix.Length).Trim();
+                if (!string.IsNullOrWhiteSpace(val)) allFilters.Add((foundPrefix, val));
+            } else {
+                allFilters.Add(("search:", liveQuery));
             }
-            else if (SelectedTabIndex == 1 && !foundInLogs && foundInInventory) {
-                SelectedTabIndex = 0;
+        }
+
+        foreach(var filter in allFilters) {
+            string prefix = filter.Prefix;
+            string val = filter.Value;
+
+            if (prefix == "search:") {
+                filteredInventory = filteredInventory.Where(item =>
+                    (item.ItemCode?.ToLower().Contains(val) == true) ||
+                    (item.Description?.ToLower().Contains(val) == true) ||
+                    (item.ManufacturerSupplier?.ToLower().Contains(val) == true) ||
+                    (item.Location?.ToLower().Contains(val) == true) ||
+                    (item.Remarks?.ToLower().Contains(val) == true));
+
+                filteredLogs = filteredLogs.Where(log =>
+                    (log.ItemCode?.ToLower().Contains(val) == true) ||
+                    (log.ItemDescription?.ToLower().Contains(val) == true) ||
+                    (log.NameRequested?.ToLower().Contains(val) == true) ||
+                    (log.TransactionType?.ToLower().Contains(val) == true) ||
+                    (log.Date?.ToLower().Contains(val) == true) ||
+                    (log.Remarks?.ToLower().Contains(val) == true));
+            } else {
+                
+                // 1. Tags that apply to BOTH tables
+                if (prefix == "code:") {
+                    filteredInventory = filteredInventory.Where(i => i.ItemCode?.ToLower().Contains(val) == true);
+                    filteredLogs = filteredLogs.Where(l => l.ItemCode?.ToLower().Contains(val) == true);
+                } else if (prefix == "desc:") {
+                    filteredInventory = filteredInventory.Where(i => i.Description?.ToLower().Contains(val) == true);
+                    filteredLogs = filteredLogs.Where(l => l.ItemDescription?.ToLower().Contains(val) == true);
+                } else if (prefix == "remark:") {
+                    filteredInventory = filteredInventory.Where(i => i.Remarks?.ToLower().Contains(val) == true);
+                    filteredLogs = filteredLogs.Where(l => l.Remarks?.ToLower().Contains(val) == true);
+                }
+                
+                // 2. INVENTORY ONLY Filters (Forces Logs list to empty out so tabs can switch)
+                else if (prefix == "mfg:" || prefix == "asf:" || prefix == "instock:" || prefix == "in:" || prefix == "out:" || prefix == "final:" || prefix == "loc:" || prefix == "status:") {
+                    
+                    filteredLogs = Enumerable.Empty<StockTransactionLog>(); 
+
+                    if (prefix == "mfg:") filteredInventory = filteredInventory.Where(i => i.ManufacturerSupplier?.ToLower().Contains(val) == true);
+                    else if (prefix == "asf:") filteredInventory = filteredInventory.Where(i => i.AsOfDate?.ToLower().Contains(val) == true);
+                    else if (prefix == "instock:") filteredInventory = filteredInventory.Where(i => i.InitialStockUI?.ToLower().Contains(val) == true);
+                    else if (prefix == "in:") filteredInventory = filteredInventory.Where(i => i.Stock_In.ToString().ToLower().Contains(val) == true);
+                    else if (prefix == "out:") filteredInventory = filteredInventory.Where(i => i.Stock_Out.ToString().ToLower().Contains(val) == true);
+                    else if (prefix == "final:") filteredInventory = filteredInventory.Where(i => i.Final_Stock.ToString().ToLower().Contains(val) == true);
+                    else if (prefix == "loc:") filteredInventory = filteredInventory.Where(i => i.Location?.ToLower().Contains(val) == true);
+                    else if (prefix == "status:") filteredInventory = filteredInventory.Where(i => i.Status?.ToLower().Contains(val) == true);
+                }
+                
+                // 3. LOGS ONLY Filters (Forces Inventory list to empty out so tabs can switch)
+                else if (prefix == "date:" || prefix == "name:" || prefix == "type:" || prefix == "qty:") {
+                    
+                    filteredInventory = Enumerable.Empty<InventoryItem>(); 
+
+                    if (prefix == "date:") filteredLogs = filteredLogs.Where(l => l.Date?.ToLower().Contains(val) == true);
+                    else if (prefix == "name:") filteredLogs = filteredLogs.Where(l => l.NameRequested?.ToLower().Contains(val) == true);
+                    else if (prefix == "type:") filteredLogs = filteredLogs.Where(l => l.TransactionType?.ToLower().Contains(val) == true);
+                    else if (prefix == "qty:") filteredLogs = filteredLogs.Where(l => l.Quantity.ToString().Contains(val));
+                }
             }
+        }
+
+        var finalInvList = filteredInventory.ToList();
+        var finalLogsList = filteredLogs.ToList();
+
+        InventoryList = new ObservableCollection<InventoryItem>(finalInvList);
+        TransactionLogs = new ObservableCollection<StockTransactionLog>(finalLogsList);
+
+        if (allFilters.Count > 0) {
+            bool foundInInventory = finalInvList.Count > 0;
+            bool foundInLogs = finalLogsList.Count > 0;
+
+            if (SelectedTabIndex == 0 && !foundInInventory && foundInLogs) SelectedTabIndex = 1;
+            else if (SelectedTabIndex == 1 && !foundInLogs && foundInInventory) SelectedTabIndex = 0;
+        } else {
+            InventoryList = new ObservableCollection<InventoryItem>(_fullInventoryList);
+            TransactionLogs = new ObservableCollection<StockTransactionLog>(_fullTransactionLogs);
         }
     }
 

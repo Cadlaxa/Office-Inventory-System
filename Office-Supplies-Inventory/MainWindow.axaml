@@ -20,6 +20,32 @@
             <Setter Property="BoxShadow" Value="0 4 12 0 #15000000"/>
         </Style>
 
+        <Style Selector="Border.SearchBar">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12,0"/> 
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundBaseBrush}"/>
+            <Setter Property="BoxShadow" Value="0 4 12 0 #15000000"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Border.SearchBar:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundChromeMediumHighBrush}"/>
+            <Setter Property="BoxShadow" Value="0 6 16 0 #20000000"/>
+        </Style>
+
+        <Style Selector="Border.SearchBar:focus-within">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="BoxShadow" Value="0 6 20 0 #25000000"/>
+        </Style>
+
         <!-- Material You Button Base (Pill Shaped + Animations) -->
         <Style Selector="Button.MaterialBtn">
             <Setter Property="CornerRadius" Value="24"/>
@@ -116,20 +142,46 @@
             </Setter>
         </Style>
 
-        <Style Selector="AutoCompleteBox:pointerover">
-            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
+        <Style Selector="AutoCompleteBox.TransparentSearch">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
-        <Style Selector="AutoCompleteBox:focus">
-            <Setter Property="BorderBrush" Value="#1A73E8"/>
-            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+        <Style Selector="AutoCompleteBox.TransparentSearch /template/ TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
-        
-        <Style Selector="TextBlock.SectionHeader">
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-            <Setter Property="Margin" Value="0,0,0,0"/>
+
+        <Style Selector="AutoCompleteBox.TransparentSearch /template/ TextBox:pointerover">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style Selector="AutoCompleteBox.TransparentSearch /template/ TextBox:focus">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style Selector="AutoCompleteBox.TransparentSearch /template/ TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style Selector="AutoCompleteBox.TransparentSearch /template/ TextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style Selector="AutoCompleteBox.TransparentSearch /template/ TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
         <Style Selector="DataGridRow">
@@ -292,22 +344,78 @@
                     <TextBlock Text="Office Supplies Inventory" FontWeight="Black" FontSize="18" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <AutoCompleteBox Grid.Column="1" 
-                    Text="{Binding SearchQuery}" 
-                    Watermark="🔍 Search (e.g. code:, name:, type:)..." 
-                    ItemsSource="{Binding SearchCommands}"
-                    MinimumPrefixLength="0"
-                    FilterMode="Contains"
-                    GotFocus="SearchBar_GotFocus"
-                    MaxDropDownHeight="250"
-                    MaxWidth="500"
-                    MinWidth="200"
-                    Margin="40,0"
-                    Height="38"
-                    FontSize="14"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center"
-                    ToolTip.Tip= "Search any entries in Inventory or in Stock logs"/>
+                <Border Grid.Column="1" 
+                        Classes="SearchBar"
+                        MaxWidth="500" MinWidth="500" Height="40" Margin="40,0"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                        ToolTip.Tip="Search any entries in Inventory or in Stock logs">
+                    
+                    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+
+                            <!-- Search Icon -->
+                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,2,0" FontSize="13" Opacity="0.8"/>
+
+                            <!-- The Active Filter Buttons (Tokens) -->
+                            <ItemsControl ItemsSource="{Binding ActiveSearchTokens}" VerticalAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- Reduced CornerRadius to 4 and adjusted padding for a compact "pill" look -->
+                                        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
+                                                CornerRadius="4" Padding="6,2,4,2">
+                                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                                
+                                                <!-- Reduced FontSize to 11 to differentiate from the main typing text -->
+                                                <TextBlock Text="{Binding Prefix}" 
+                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
+                                                        FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+                                                
+                                                <TextBlock Text="{Binding Value}" 
+                                                        Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" 
+                                                        FontSize="11" VerticalAlignment="Center"/>
+                                                
+                                                <!-- Shrunk the button footprint so it doesn't warp the token height -->
+                                                <Button Command="{ReflectionBinding $parent[Window].DataContext.RemoveSearchTokenCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="✕" FontSize="9" Padding="4,2" Margin="2,0,0,0" 
+                                                        Background="Transparent" 
+                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                        BorderThickness="0" VerticalAlignment="Center" Cursor="Hand"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- The Transparent Input Field -->
+                            <AutoCompleteBox Classes="TransparentSearch" Text="{Binding SearchQuery}"
+                                            ItemsSource="{Binding SearchCommands}"
+                                            MinimumPrefixLength="0"
+                                            FilterMode="Contains"
+                                            GotFocus="SearchBar_GotFocus"
+                                            MaxDropDownHeight="250"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            MinWidth="200"
+                                            FontSize="13"
+                                            Watermark="Search (e.g. code:, name:, type:)..."
+                                            VerticalAlignment="Center"
+                                            Margin="-4,0,0,0">
+                                
+                                <AutoCompleteBox.KeyBindings>
+                                    <KeyBinding Gesture="Enter" Command="{Binding CommitSearchTokenCommand}" />
+                                </AutoCompleteBox.KeyBindings>
+                                
+                            </AutoCompleteBox>
+                            
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
             </Grid>
         </Border>
 
