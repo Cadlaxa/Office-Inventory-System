@@ -1,8 +1,9 @@
 # <img width="60" height="60" alt="app-icon" src="https://github.com/user-attachments/assets/bdb7a34c-d86d-488c-92a2-2afd08ca9d06" /> Office Inventory System 
 Simple offline inventory system made with Avalonia UI
 ---
-  <img width="1300" alt="image" src="https://github.com/user-attachments/assets/7ad7dcff-095a-4d7e-9c82-5f1cee83d5ae" />
-  <img width="1300" alt="image" src="https://github.com/user-attachments/assets/7a7b11e9-92f0-40f5-a13c-6983029eae39" />
+  <img width="1365" height="709" alt="image" src="https://github.com/user-attachments/assets/68574ea4-f051-4d20-9f10-09c764348a14" />
+  <img width="1366" height="700" alt="image" src="https://github.com/user-attachments/assets/598ded95-90c9-42fc-95dc-4d8324ebdc87" />
+
 
 # Manage Database
 ## Adding Inventory Entry
@@ -31,7 +32,7 @@ Simple offline inventory system made with Avalonia UI
   
 # Search Functions
 - The search bar will provide search clips to easily find the exact entry from the Inventory or the Stock grid
-  <img width="575" height="93" alt="image" src="https://github.com/user-attachments/assets/654cf1c5-13b7-4288-b5ef-80c54161d719" />
+  <img width="586" height="86" alt="image" src="https://github.com/user-attachments/assets/c4fd92d0-ec2f-4781-a8bb-ae11e51c46f5" />
 
 # Todo:
 - [x] Simple CRUD functions
