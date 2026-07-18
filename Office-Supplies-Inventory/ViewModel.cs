@@ -348,6 +348,17 @@ public partial class MainViewModel : ObservableObject {
             ShowNotification("Error: Item Code is required!", true);
             return;
         }
+        bool isDuplicate = InventoryList.Any(item => 
+            string.Equals(item.ItemCode, NewItemForm.ItemCode, StringComparison.OrdinalIgnoreCase));
+
+        if (isDuplicate) {
+            ShowNotification($"Error: The Item Code '{NewItemForm.ItemCode}' already exists!", true);
+            return;
+        }
+        if (!int.TryParse(NewItemForm.InitialStockUI, out int parsedStock) || parsedStock < 0) {
+            ShowNotification("Error: Initial Stock must be a valid number (e.g., 0, 10, 50).", true);
+            return;
+        }
         try {
             _repository.AddItem(NewItemForm);
             LastAddedItemCode = NewItemForm.ItemCode; 
@@ -485,6 +496,14 @@ public partial class MainViewModel : ObservableObject {
             ShowNotification("Error: Name of Requester is required!", true);
             return;
         }
+        if (!int.TryParse(StockOutForm.QuantityUI, out int parsedQuantity) || parsedQuantity < 0) {
+            ShowNotification("Error: Stock Quantity must be a valid number (e.g., 0, 10, 50).", true);
+            return;
+        }
+        if (!int.TryParse(StockOutForm.QuantityUI, out int parsedQuantity1) || parsedQuantity1 == 0 || parsedQuantity1 == null) {
+            ShowNotification("Error: Stock Quantity must have atleast 1 value.", true);
+            return;
+        }
         try {
             var currentItem = _fullInventoryList.FirstOrDefault(i => i.ItemCode == StockOutForm.ItemCode);
             if (currentItem != null && StockOutForm.Quantity > currentItem.Final_Stock) {
@@ -529,6 +548,18 @@ public partial class MainViewModel : ObservableObject {
     private void SaveStockIn() {
         if (string.IsNullOrWhiteSpace(StockInForm.ItemCode)) {
             ShowNotification("Error: Please select an item code!", true);
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(StockInForm.NameRequested)) {
+            ShowNotification("Error: Name of Deliverer is required!", true);
+            return;
+        }
+        if (!int.TryParse(StockInForm.QuantityUI, out int parsedQuantity) || parsedQuantity < 0) {
+            ShowNotification("Error: Stock Quantity must be a valid number (e.g., 0, 10, 50).", true);
+            return;
+        }
+        if (!int.TryParse(StockInForm.QuantityUI, out int parsedQuantity1) || parsedQuantity1 == 0 || parsedQuantity1 == null) {
+            ShowNotification("Error: Stock Quantity must have atleast 1 value.", true);
             return;
         }
         try {
