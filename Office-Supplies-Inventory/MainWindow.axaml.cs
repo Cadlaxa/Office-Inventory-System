@@ -130,6 +130,35 @@ public partial class MainWindow: Window {
         }, DispatcherPriority.Input);
     }
 
+    private void EditEntryMenuItem_Click(object ? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+       if (this.DataContext is MainViewModel viewModel) {
+           if (InventoryGrid.SelectedItem != null) {
+               viewModel.OpenEditDialog();
+           }
+       }
+    }
+
+    // Inside MainWindow.axaml.cs
+
+    private void GotoItemMenuItem_Click(object ? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        if (this.DataContext is MainViewModel viewModel) {
+            if (viewModel.SelectedLog != null && !string.IsNullOrEmpty(viewModel.SelectedLog.ItemCode)) {
+                string targetCode = viewModel.SelectedLog.ItemCode;
+                viewModel.SelectedTabIndex = 0;;
+                ScrollToItem(targetCode);
+            }
+        }
+    }
+
+    private void DeselectMenuItem_Click(object ? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        if (InventoryGrid.SelectedItems != null) {
+            InventoryGrid.SelectedItems.Clear();
+        }
+        if (TransactionLogGrid.SelectedItems != null) {
+            TransactionLogGrid.SelectedItems.Clear();
+        }
+    }
+
     public void LoadSettings() {
         try {
             if (File.Exists(_settingsPath)) {

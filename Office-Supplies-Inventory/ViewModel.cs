@@ -471,6 +471,10 @@ public partial class MainViewModel : ObservableObject {
 
     [RelayCommand]
     private void OpenStockOutDialog() {
+        if (SelectedItem.Final_Stock <= 0) {
+            ShowNotification($"Cannot stock out. {SelectedItem.ItemCode} is completely out of stock.", true);
+            return; 
+        }
         StockOutForm = new StockTransactionLog {
             ItemCode = SelectedItem?.ItemCode ?? string.Empty,
             NameRequested = string.Empty,

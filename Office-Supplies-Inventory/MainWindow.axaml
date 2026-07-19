@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Office_Supplies_Inventory"
+        xmlns:local="using:Office_Supplies_Inventory" 
         x:DataType="vm:MainViewModel"
         x:Class="Office_Supplies_Inventory.MainWindow"
         Title="Office Supplies Inventory System" Width="1150" Height="650"
@@ -8,6 +9,10 @@
         Icon="/Icon/app-icon.ico"
         Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}"
         KeyDown="Window_KeyDown">
+    
+    <Window.Resources>
+        <local:StockColorConverter x:Key="StockColorConverter"/>
+    </Window.Resources>
         
     <Window.Styles>
         <!-- Material You Card Style with Soft Shadow -->
@@ -445,8 +450,35 @@
                                   GridLinesVisibility="Horizontal"
                                   BorderThickness="0"
                                   Background="Transparent">
+
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Edit Entry" Click="EditEntryMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="✏️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Deselect" Click="DeselectMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="❌" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
                             
                             <DataGrid.Styles>
+                                <Style Selector="DataGridRow">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <MultiBinding Converter="{StaticResource StockColorConverter}" ConverterParameter="Row">
+                                                <Binding Path="Final_Stock"/>
+                                                <Binding Path="InitialStock"/>
+                                                <Binding Path="Stock_In"/>
+                                                <Binding Path="Stock_Out"/>
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
                                 <Style Selector="DataGridCell">
                                     <Setter Property="FontSize" Value="13" />
                                     <Setter Property="Padding" Value="12,10" />
@@ -582,7 +614,17 @@
                                     </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Background="#0F6CBD" CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" Margin="12,0">
+                                            <Border CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" Margin="12,0">
+                                                
+                                                <Border.Background>
+                                                    <MultiBinding Converter="{StaticResource StockColorConverter}">
+                                                        <Binding Path="Final_Stock"/>
+                                                        <Binding Path="InitialStock"/>
+                                                        <Binding Path="Stock_In"/>
+                                                        <Binding Path="Stock_Out"/> 
+                                                    </MultiBinding>
+                                                </Border.Background>
+
                                                 <TextBlock Text="{Binding Final_Stock}" 
                                                         TextTrimming="CharacterEllipsis"
                                                         ToolTip.Tip="{Binding Final_Stock}"
@@ -638,7 +680,7 @@
                     </Border>
 
                     <!-- Sidebar Actions (Material Card) -->
-                    <Border Grid.Column="1" Classes="MaterialCard">
+                    <Border Grid.Column="1" Classes="MaterialCard" ClipToBounds="False">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Inventory Actions" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
@@ -722,6 +764,21 @@
                                   GridLinesVisibility="Horizontal"
                                   BorderThickness="0"
                                   Background="Transparent">
+                            
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Go to Item" Click="GotoItemMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="➡️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Deselect" Click="DeselectMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="❌" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
 
                             <DataGrid.Styles>
                                 <Style Selector="DataGridCell">
@@ -1105,7 +1162,7 @@
                 IsHitTestVisible="False"
                 BoxShadow="0 6 16 0 #40000000"
                 Opacity="{Binding SnackbarOpacity}"
-                ZIndex="200">
+                ZIndex="400">
             <Border.Transitions>
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
@@ -1126,7 +1183,7 @@
                 IsHitTestVisible="False"
                 BoxShadow="0 6 16 0 #40000000"
                 Opacity="{Binding SelectionSnackbarOpacity}"
-                ZIndex="200">
+                ZIndex="400">
             <Border.Transitions>
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
