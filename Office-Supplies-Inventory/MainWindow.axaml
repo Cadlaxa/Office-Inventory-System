@@ -433,7 +433,7 @@
             
             <!-- INVENTORY TAB -->
             <TabItem Header="Supplies Inventory" FontSize="18" FontWeight="Black" ToolTip.Tip="Supplies Inventory &#x0A;[Ctrl + 1]">
-                <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,0,0,0">
+                <Grid Classes="TabContainer" ColumnDefinitions="*, Auto" Margin="0,0,0,0">
                     
                     <Border Grid.Column="0" Classes="MaterialCard" Margin="0,0,15,0" Padding="0" ClipToBounds="True">
                         <DataGrid x:Name="InventoryGrid"
@@ -680,18 +680,33 @@
                     </Border>
 
                     <!-- Sidebar Actions (Material Card) -->
-                    <Border Grid.Column="1" Classes="MaterialCard" ClipToBounds="False">
+                    <Border Grid.Column="1" 
+                        Classes="MaterialCard" ClipToBounds="False" 
+                        HorizontalAlignment="Right" 
+                        Width="{Binding IsSidebarExpanded, Converter={StaticResource BoolToWidthConverter}}">
+
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Width" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                            </Transitions>
+                        </Border.Transitions>
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Inventory Actions" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+
+                                <Button Content="☰ Inventory Actions" 
+                                    Command="{Binding ToggleSidebarCommand}" 
+                                    HorizontalAlignment="Stretch" 
+                                    Classes="MaterialBtn Secondary" 
+                                    FontWeight="Bold"
+                                    FontSize="20"/>
                                 
-                                <TextBlock Text="Transactions" Classes="SectionHeader"/>
+                                <TextBlock Text="Transactions" Classes="SectionHeader" IsVisible="{Binding IsSidebarExpanded}"/>
                                 <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in) &#x0A;[Ctrl+I]"/>
                                 <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out) &#x0A;[Ctrl+O]"/>
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
-                                <TextBlock Text="Manage Database" Classes="SectionHeader"/>
+                                <TextBlock Text="Manage Database" Classes="SectionHeader" IsVisible="{Binding IsSidebarExpanded}"/>
                                 <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item &#x0A;[Ctrl+N]"/>
                                 <Button Content="🗑️ Delete Selected" Classes="MaterialBtn Danger" 
                                         Command="{Binding OpenDeleteDialogCommand}" 
@@ -700,10 +715,19 @@
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
-                                <TextBlock Text="System Utilities" Classes="SectionHeader"/>
+                                <TextBlock Text="System Utilities" Classes="SectionHeader" IsVisible="{Binding IsSidebarExpanded}"/>
 
-                                <Grid ColumnDefinitions="*,*">
-                                    <Button Grid.Column="0" Classes="MaterialBtn Secondary" Command="{Binding ImportDataCommand}" Margin="0,0,5,0" HorizontalContentAlignment="Center" ToolTip.Tip="Import data from xlsx file &#x0A;[Ctrl+Shift+I]">
+                                <UniformGrid Columns="{Binding IsSidebarExpanded, Converter={StaticResource BoolToColumnsConverter}}"
+                                    Rows="{Binding IsSidebarExpanded, Converter={StaticResource BoolToRowsConverter}}">
+
+                                    <Button Classes="MaterialBtn Secondary" 
+                                            Command="{Binding ImportDataCommand}" 
+                                            HorizontalAlignment="Stretch" 
+                                            HorizontalContentAlignment="Center" 
+                                            Margin="0,0,8,0"
+                                            IsVisible="{Binding IsSidebarExpanded}"
+                                            IsHitTestVisible="{Binding IsSidebarExpanded}"
+                                            ToolTip.Tip="Import data from xlsx file &#x0A;[Ctrl+Shift+I]">
                                         <Panel>
                                             <TextBlock Text="📥 Import" IsVisible="{Binding !IsImporting}" HorizontalAlignment="Center"/>
                                             <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsImporting}" HorizontalAlignment="Center">
@@ -712,7 +736,27 @@
                                         </Panel>
                                     </Button>
 
-                                    <Button Grid.Column="1" Classes="MaterialBtn Secondary" Command="{Binding ExportDataCommand}" Margin="5,0,0,0" HorizontalContentAlignment="Center" ToolTip.Tip="Export data to xlsx file &#x0A;[Ctrl+Shift+I]">
+                                    <Button Classes="MaterialBtn Secondary" 
+                                            Command="{Binding ImportDataCommand}" 
+                                            HorizontalAlignment="Stretch" 
+                                            HorizontalContentAlignment="Center" 
+                                            Margin="0,0,0,8"
+                                            IsVisible="{Binding !IsSidebarExpanded}"
+                                            IsHitTestVisible="{Binding !IsSidebarExpanded}"
+                                            ToolTip.Tip="Import data from xlsx file &#x0A;[Ctrl+Shift+I]">
+                                        <Panel>
+                                            <TextBlock Text="📥 Import" IsVisible="{Binding !IsImporting}" HorizontalAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsImporting}" HorizontalAlignment="Center">
+                                                <Arc Classes="Spinner" Width="16" Height="16" StartAngle="0" SweepAngle="270" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="2" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Panel>
+                                    </Button>
+
+                                    <Button Classes="MaterialBtn Secondary" 
+                                            Command="{Binding ExportDataCommand}" 
+                                            HorizontalAlignment="Stretch" 
+                                            HorizontalContentAlignment="Center" 
+                                            ToolTip.Tip="Export data to xlsx file &#x0A;[Ctrl+Shift+I]">
                                         <Panel>
                                             <TextBlock Text="📤 Export" IsVisible="{Binding !IsExporting}" HorizontalAlignment="Center"/>
                                             <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsExporting}" HorizontalAlignment="Center">
@@ -720,11 +764,11 @@
                                             </StackPanel>
                                         </Panel>
                                     </Button>
-                                </Grid>
+                                </UniformGrid>
 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
-                                <TextBlock Text="Settings" Classes="SectionHeader" Margin="0,10,0,0"/>
+                                <TextBlock Text="Settings" Classes="SectionHeader" Margin="0,10,0,0" IsVisible="{Binding IsSidebarExpanded}"/>
                                 <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center" Margin="0,5,0,0">
                                     <ToggleSwitch x:Name="ThemeToggle" Grid.Column="0" OffContent="Light Mode" OnContent="Dark Mode" IsChecked="False" Checked="ThemeToggle_Toggled" Unchecked="ThemeToggle_Toggled" ToolTip.Tip="Toggles Light or Dark Theme"/>
                                     <Button Grid.Column="1" Content="🔄" Classes="MaterialBtn Secondary" Width="60" Click="CheckForUpdates_Click" ToolTip.Tip="Check for Updates"/>

@@ -31,12 +31,12 @@ public partial class MainWindow: Window {
     public MainWindow() {
 
         InitializeComponent();
+        LoadSettings();
         var viewModel = new MainViewModel();
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         DataContext = viewModel;
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         this.Title = $"Office Supplies Inventory System v{version.Major}.{version.Minor}.{version.Build}";
-        LoadSettings();
         string appcastUrl = "https://github.com/Cadlaxa/Office-Inventory-System/releases/latest/download/appcast.xml";
         
         if (!Design.IsDesignMode) {
@@ -98,8 +98,22 @@ public partial class MainWindow: Window {
         }
     }
 
+    protected override void OnDataContextChanged(EventArgs e) {
+        base.OnDataContextChanged(e);
+        if (DataContext is MainViewModel vm) {
+            vm.IsSidebarExpanded = _currentSettings.IsSidebarExpanded;
+            vm.PropertyChanged -= ViewModel_PropertyChanged; 
+            vm.PropertyChanged += ViewModel_PropertyChanged;
+        }
+    }
+
     private void ViewModel_PropertyChanged(object ? sender, PropertyChangedEventArgs e) {
         if (sender is MainViewModel vm) {
+            if (e.PropertyName == nameof(vm.IsSidebarExpanded)) {
+                _currentSettings.IsSidebarExpanded = vm.IsSidebarExpanded;
+                SaveSettings();
+            }
+
             // 1. Focus Add Dialog
             if (e.PropertyName == nameof(vm.IsAddDialogVisible) && vm.IsAddDialogVisible) {
                 ForceFocus(AddItemCodeTextBox);
@@ -137,8 +151,6 @@ public partial class MainWindow: Window {
            }
        }
     }
-
-    // Inside MainWindow.axaml.cs
 
     private void GotoItemMenuItem_Click(object ? sender, Avalonia.Interactivity.RoutedEventArgs e) {
         if (this.DataContext is MainViewModel viewModel) {
@@ -189,18 +201,6 @@ public partial class MainWindow: Window {
         }
     }
 
-    /*private void InventoryGrid_CellEditEnded(object ? sender, Avalonia.Controls.DataGridCellEditEndedEventArgs e) {
-        if (e.EditAction == Avalonia.Controls.DataGridEditAction.Commit) {
-            if (e.Row.DataContext is InventoryItem editedItem) {
-                editedItem.Final_Stock = editedItem.InitialStock + editedItem.Stock_In - editedItem.Stock_Out;
-                if (this.DataContext is MainViewModel viewModel) {
-                    viewModel.UpdateItemInDatabase(editedItem);
-                    viewModel.LoadDataCommand.Execute(null);
-                }
-            }
-        }
-    }*/
-
     private void InventoryGrid_DoubleTapped(object? sender, TappedEventArgs e) {
         if (DataContext is MainViewModel viewModel) {
             viewModel.OpenEditDialog();
@@ -235,7 +235,8 @@ public partial class MainWindow: Window {
     }
 
     public class AppSettings {
-        public bool IsDarkMode {get; set;} = false;
+        public bool IsDarkMode { get; set; } = false;
+        public bool IsSidebarExpanded { get; set; } = true; // Added property
     }
 
     public class FileLogger : ILogger {

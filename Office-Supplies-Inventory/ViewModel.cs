@@ -90,6 +90,14 @@ public partial class MainViewModel : ObservableObject {
         }
     }
 
+    [ObservableProperty]
+    private bool _isSidebarExpanded = true;
+
+    [RelayCommand]
+    public void ToggleSidebar() {
+        IsSidebarExpanded = !IsSidebarExpanded;
+    }
+
     private string _searchQuery = string.Empty;
     public string SearchQuery {
         get => _searchQuery;

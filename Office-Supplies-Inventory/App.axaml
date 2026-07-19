@@ -1,9 +1,18 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Office_Supplies_Inventory"
              x:Class="Office_Supplies_Inventory.App"
              RequestedThemeVariant="Default">
+    
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
     </Application.Styles>
+
+    <Application.Resources>
+        <local:BoolToWidthConverter x:Key="BoolToWidthConverter"/>
+        <local:BoolToOrientationConverter x:Key="BoolToOrientationConverter"/>
+        <local:BoolToColumnsConverter x:Key="BoolToColumnsConverter"/>
+        <local:BoolToRowsConverter x:Key="BoolToRowsConverter"/>
+    </Application.Resources>
 </Application>
