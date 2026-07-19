@@ -435,7 +435,7 @@
             <TabItem Header="Supplies Inventory" FontSize="18" FontWeight="Black" ToolTip.Tip="Supplies Inventory &#x0A;[Ctrl + 1]">
                 <Grid Classes="TabContainer" ColumnDefinitions="*, Auto" Margin="0,0,0,0">
                     
-                    <Border Grid.Column="0" Classes="MaterialCard" Margin="0,0,15,0" Padding="0" ClipToBounds="True">
+                    <Border Grid.Column="0" Classes="MaterialCard" Margin="0,0,12,0" Padding="0" ClipToBounds="True">
                         <DataGrid x:Name="InventoryGrid"
                                   ItemsSource="{Binding InventoryList}" 
                                   SelectedItem="{Binding SelectedItem}"
@@ -453,14 +453,14 @@
 
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Edit Entry" Click="EditEntryMenuItem_Click">
-                                        <MenuItem.Icon>
-                                            <TextBlock Text="✏️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                        </MenuItem.Icon>
-                                    </MenuItem>
                                     <MenuItem Header="Deselect" Click="DeselectMenuItem_Click">
                                         <MenuItem.Icon>
                                             <TextBlock Text="❌" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Edit Entry" Click="EditEntryMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="✏️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                 </ContextMenu>
@@ -503,13 +503,22 @@
                                         <DataTemplate>
                                             <!-- Added Foreground and FontWeight here -->
                                             <TextBlock Text="{Binding ItemCode}" 
-                                                    Foreground="#D95E25"
                                                     FontWeight="SemiBold"
                                                     TextTrimming="CharacterEllipsis" 
                                                     VerticalAlignment="Center" 
                                                     Margin="12,0"
                                                     ToolTip.Tip="{Binding ItemCode}"
-                                                    ToolTip.ShowDelay="300"/>
+                                                    ToolTip.ShowDelay="300">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#D95E25"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -522,7 +531,14 @@
                                                     VerticalAlignment="Center" 
                                                     Margin="12,0"
                                                     ToolTip.Tip="{Binding Description}"
-                                                    ToolTip.ShowDelay="300"/>
+                                                    ToolTip.ShowDelay="300">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -535,7 +551,14 @@
                                                     VerticalAlignment="Center" 
                                                     Margin="12,0"
                                                     ToolTip.Tip="{Binding ManufacturerSupplier}"
-                                                    ToolTip.ShowDelay="300"/>
+                                                    ToolTip.ShowDelay="300">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -548,7 +571,14 @@
                                                     VerticalAlignment="Center" 
                                                     Margin="12,0"
                                                     ToolTip.Tip="{Binding AsOfDate}"
-                                                    ToolTip.ShowDelay="300"/>
+                                                    ToolTip.ShowDelay="300">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -561,7 +591,20 @@
                                     </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding InitialStock}" Foreground="#AF37F5" FontWeight="Bold"  VerticalAlignment="Center" Margin="12,0"/>
+                                            <TextBlock Text="{Binding InitialStock}" 
+                                                    FontWeight="Bold" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#AF37F5"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -578,10 +621,19 @@
                                                     TextTrimming="CharacterEllipsis"
                                                     ToolTip.Tip="{Binding Stock_In}"
                                                     ToolTip.ShowDelay="300"
-                                                    Foreground="#107C41" 
                                                     FontWeight="Bold" 
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#107C41"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -598,10 +650,19 @@
                                                     TextTrimming="CharacterEllipsis"
                                                     ToolTip.Tip="{Binding Stock_Out}"
                                                     ToolTip.ShowDelay="300"
-                                                    Foreground="#D13438" 
                                                     FontWeight="Bold" 
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#D13438"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -645,7 +706,14 @@
                                                     ToolTip.Tip="{Binding Location}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -658,7 +726,14 @@
                                                     ToolTip.Tip="{Binding Remarks}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -671,7 +746,15 @@
                                                     ToolTip.Tip="{Binding Status}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -811,14 +894,14 @@
                             
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Go to Item" Click="GotoItemMenuItem_Click">
-                                        <MenuItem.Icon>
-                                            <TextBlock Text="➡️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                        </MenuItem.Icon>
-                                    </MenuItem>
                                     <MenuItem Header="Deselect" Click="DeselectMenuItem_Click">
                                         <MenuItem.Icon>
                                             <TextBlock Text="❌" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Go to Item" Click="GotoItemMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="➡️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                 </ContextMenu>
@@ -848,13 +931,22 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Date}" 
-                                                    Foreground="#1A73E8"
                                                     FontWeight="Bold" 
                                                     TextTrimming="CharacterEllipsis" 
                                                     ToolTip.Tip="{Binding Date}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#1A73E8"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
@@ -874,7 +966,14 @@
                                                     ToolTip.Tip="{Binding NameRequested}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
@@ -894,7 +993,15 @@
                                                     ToolTip.Tip="{Binding ItemDescription}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
@@ -918,10 +1025,19 @@
                                                     TextTrimming="CharacterEllipsis"
                                                     ToolTip.Tip="{Binding Quantity}"
                                                     ToolTip.ShowDelay="300"
-                                                    Foreground="#107C41" 
                                                     FontWeight="Bold" 
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#107C41"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
@@ -942,13 +1058,22 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding TransactionType}" 
-                                                    Foreground="{Binding TransactionColor}"
                                                     FontWeight="Bold"
                                                     TextTrimming="CharacterEllipsis" 
                                                     ToolTip.Tip="{Binding TransactionType}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="{Binding TransactionColor}"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -963,13 +1088,22 @@
                                         <DataTemplate>
                                             <!-- Added Foreground and FontWeight here -->
                                             <TextBlock Text="{Binding ItemCode}" 
-                                                    Foreground="#D95E25"
                                                     FontWeight="SemiBold"
                                                     TextTrimming="CharacterEllipsis" 
                                                     ToolTip.Tip="{Binding ItemCode}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="Foreground" Value="#D95E25"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </Style>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -982,7 +1116,14 @@
                                                     ToolTip.Tip="{Binding Remarks}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
-                                                    Margin="12,0"/>
+                                                    Margin="12,0">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="DataGridRow:selected TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}"/>
+                                                    </Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
@@ -1148,8 +1289,8 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     
-                    <TextBlock Text="Employee Name:" x:Name="StockOutComboBox" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockOutForm.NameRequested}" Watermark="e.g., Juan Dela Cruz"/>
+                    <TextBlock Text="Employee Name:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBox Text="{Binding StockOutForm.NameRequested}" x:Name="StockOutComboBox" Watermark="e.g., Juan Dela Cruz"/>
                     
                     <TextBlock Text="Quantity:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockOutForm.QuantityUI}" Watermark="e.g., 1"/>
