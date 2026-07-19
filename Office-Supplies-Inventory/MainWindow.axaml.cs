@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Input;
 using System.Windows.Input;
+using System.ComponentModel;
 
 namespace Office_Supplies_Inventory;
 
@@ -30,7 +31,9 @@ public partial class MainWindow: Window {
     public MainWindow() {
 
         InitializeComponent();
-        DataContext = new MainViewModel();
+        var viewModel = new MainViewModel();
+        viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        DataContext = viewModel;
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         this.Title = $"Office Supplies Inventory System v{version.Major}.{version.Minor}.{version.Build}";
         LoadSettings();
@@ -93,6 +96,38 @@ public partial class MainWindow: Window {
             
             _sparkle.StartLoop(true, true);
         }
+    }
+
+    private void ViewModel_PropertyChanged(object ? sender, PropertyChangedEventArgs e) {
+        if (sender is MainViewModel vm) {
+            // 1. Focus Add Dialog
+            if (e.PropertyName == nameof(vm.IsAddDialogVisible) && vm.IsAddDialogVisible) {
+                ForceFocus(AddItemCodeTextBox);
+            }
+            // 2. Focus Edit Dialog
+            else if (e.PropertyName == nameof(vm.IsEditDialogVisible) && vm.IsEditDialogVisible) {
+                ForceFocus(EditItemDescTextBox);
+            }
+            // 3. Focus Stock Out Dialog
+            else if (e.PropertyName == nameof(vm.IsStockOutDialogVisible) && vm.IsStockOutDialogVisible) {
+                ForceFocus(StockOutComboBox);
+            }
+            // 4. Focus Stock In Dialog
+            else if (e.PropertyName == nameof(vm.IsStockInDialogVisible) && vm.IsStockInDialogVisible) {
+                ForceFocus(StockInComboBox);
+            }
+        }
+    }
+    private async void ForceFocus(Control targetControl) {
+        await Task.Delay(400);
+        Dispatcher.UIThread.Post(() => {
+            targetControl.Focus();
+            var topLevel = TopLevel.GetTopLevel(targetControl);
+            if (targetControl is TextBox tb) {
+                tb.CaretIndex = tb.Text?.Length ?? 0;
+            }
+
+        }, DispatcherPriority.Input);
     }
 
     public void LoadSettings() {

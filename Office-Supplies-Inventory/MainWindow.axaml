@@ -26,7 +26,7 @@
             <Setter Property="Padding" Value="12,0"/> 
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundBaseBrush}"/>
-            <Setter Property="BoxShadow" Value="0 4 12 0 #15000000"/>
+            <!-- <Setter Property="BoxShadow" Value="0 4 12 0 #15000000"/> -->
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
@@ -226,6 +226,7 @@
         <Style Selector="Grid.DialogBackdrop.show">
             <Setter Property="Opacity" Value="1"/>
             <Setter Property="IsHitTestVisible" Value="True"/>
+            <Setter Property="ZIndex" Value="300"/>
             <Setter Property="Background" Value="#B2000000"/>
         </Style>
 
@@ -327,6 +328,8 @@
         <KeyBinding Gesture="Ctrl+D1" Command="{Binding SwitchTabCommand}" CommandParameter="0"/>
         <KeyBinding Gesture="Ctrl+D2" Command="{Binding SwitchTabCommand}" CommandParameter="1"/>
         <KeyBinding Command="{Binding OpenAddDialogCommand}" Gesture="Ctrl+N"/>
+        <KeyBinding Command="{Binding OpenStockInDialogCommand}" Gesture="Ctrl+I"/>
+        <KeyBinding Command="{Binding OpenStockOutDialogCommand}" Gesture="Ctrl+O"/>
         <KeyBinding Command="{Binding HandleGlobalDeleteCommand}" Gesture="Delete"/>
     </Window.KeyBindings>
 
@@ -639,8 +642,8 @@
                                 <TextBlock Text="Inventory Actions" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 
                                 <TextBlock Text="Transactions" Classes="SectionHeader"/>
-                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in)"/>
-                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out)"/>
+                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in) [Ctrl+I]"/>
+                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out) [Ctrl+O]"/>
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
@@ -742,6 +745,7 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Date}" 
+                                                    Foreground="#1A73E8"
                                                     FontWeight="Bold" 
                                                     TextTrimming="CharacterEllipsis" 
                                                     ToolTip.Tip="{Binding Date}"
@@ -901,7 +905,7 @@
                     <TextBlock Text="Add New Supply Item" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                     
                     <TextBlock Text="Item (Identifier/Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding NewItemForm.ItemCode}" Watermark="e.g., 44122011-FO-T04" AcceptsReturn="False"/>
+                    <TextBox Text="{Binding NewItemForm.ItemCode}" x:Name="AddItemCodeTextBox" Watermark="e.g., 44122011-FO-T04" AcceptsReturn="False"/>
                     
                     <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding NewItemForm.Description}" Watermark="e.g., Bond Paper (A4)"/>
@@ -939,7 +943,7 @@
                         <TextBlock Text="{Binding EditItemForm.ItemCode, StringFormat='Editing: {0}'}" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                         
                         <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                        <TextBox Text="{Binding EditItemForm.Description}" Watermark="e.g., Bond Paper (A4)"/>
+                        <TextBox Text="{Binding EditItemForm.Description}" x:Name="EditItemDescTextBox" Watermark="e.g., Bond Paper (A4)"/>
 
                         <TextBlock Text="Manufacturer / Supplier:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                         <TextBox Text="{Binding EditItemForm.ManufacturerSupplier}" Watermark="e.g., DBM PS"/>
@@ -1041,7 +1045,7 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     
-                    <TextBlock Text="Employee Name:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Text="Employee Name:" x:Name="StockOutComboBox" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockOutForm.NameRequested}" Watermark="e.g., Juan Dela Cruz"/>
                     
                     <TextBlock Text="Quantity:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
@@ -1076,7 +1080,7 @@
                     </ComboBox>
                     
                     <TextBlock Text="Supplier/Source:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockInForm.NameRequested}" Watermark="e.g., Office Depot"/>
+                    <TextBox Text="{Binding StockInForm.NameRequested}" x:Name="StockInComboBox" Watermark="e.g., Office Depot"/>
                     
                     <TextBlock Text="Quantity Delivered:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockInForm.QuantityUI}" Watermark="e.g., 10"/>
