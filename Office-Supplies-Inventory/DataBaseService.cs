@@ -87,7 +87,9 @@ public class InventoryRepository {
         try {
             using IDbConnection db = new SqliteConnection(_connectionString);
             
-            // UPDATE THE TRANSACTION LOG ITSELF
+            // 1. UPDATE THE SPECIFIC TRANSACTION LOG
+            // This updates the unique details (Quantity, Date, Remarks, the specific Requester) 
+            // for the single row the user just edited.
             string updateLogSql = @"UPDATE StockTransactionLog
                                     SET Date = @Date,
                                         NameRequested = @NameRequested,
@@ -99,6 +101,18 @@ public class InventoryRepository {
                                     
             db.Execute(updateLogSql, log);
 
+            // 2. SYNC SHARED ITEM DETAILS ACROSS ALL LOGS
+            // This ensures every single log with this ItemCode gets the corrected Description.
+            string syncLogsSql = @"UPDATE StockTransactionLog
+                                SET ItemDescription = @ItemDescription
+                                WHERE ItemCode = @ItemCode";
+                                
+            db.Execute(syncLogsSql, new { 
+                ItemDescription = log.ItemDescription, 
+                ItemCode = log.ItemCode 
+            });
+
+            // 3. UPDATE INVENTORY AND RECALCULATE STOCK
             string updateInventorySql = @"
                 UPDATE InventoryRecords 
                 SET Description = @ItemDescription,
@@ -121,7 +135,8 @@ public class InventoryRepository {
                 ItemDescription = log.ItemDescription, 
                 ItemCode = log.ItemCode 
             });
-            Serilog.Log.Information("Successfully updated transaction {TransactionId} and recalculated stock for item {ItemCode}.", log.TransactionId, log.ItemCode);
+            
+            Serilog.Log.Information("Successfully updated transaction {TransactionId}, synced descriptions, and recalculated stock for item {ItemCode}.", log.TransactionId, log.ItemCode);
         }
         catch (Exception ex) {
             Serilog.Log.Error(ex, "Failed to update transaction {TransactionId} and recalculate stock for item {ItemCode}.", log.TransactionId, log.ItemCode);

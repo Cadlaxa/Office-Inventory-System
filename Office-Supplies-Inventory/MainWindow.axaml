@@ -331,6 +331,8 @@
         <KeyBinding Command="{Binding OpenStockInDialogCommand}" Gesture="Ctrl+I"/>
         <KeyBinding Command="{Binding OpenStockOutDialogCommand}" Gesture="Ctrl+O"/>
         <KeyBinding Command="{Binding HandleGlobalDeleteCommand}" Gesture="Delete"/>
+        <KeyBinding Command="{Binding ImportDataCommand}" Gesture="Ctrl+Shift+I" />
+        <KeyBinding Command="{Binding ExportDataCommand}" Gesture="Ctrl+Shift+E"/>
     </Window.KeyBindings>
 
     <Grid RowDefinitions="Auto, *">
@@ -425,7 +427,7 @@
         <TabControl Grid.Row="1" Margin="0,0,0,10" x:Name="MainTabs" SelectedIndex="{Binding SelectedTabIndex}">
             
             <!-- INVENTORY TAB -->
-            <TabItem Header="Supplies Inventory" FontSize="18" FontWeight="Black" ToolTip.Tip="Supplies Inventory [Ctrl + 1]">
+            <TabItem Header="Supplies Inventory" FontSize="18" FontWeight="Black" ToolTip.Tip="Supplies Inventory &#x0A;[Ctrl + 1]">
                 <Grid Classes="TabContainer" ColumnDefinitions="*, 280" Margin="0,0,0,0">
                     
                     <Border Grid.Column="0" Classes="MaterialCard" Margin="0,0,15,0" Padding="0" ClipToBounds="True">
@@ -642,13 +644,13 @@
                                 <TextBlock Text="Inventory Actions" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 
                                 <TextBlock Text="Transactions" Classes="SectionHeader"/>
-                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in) [Ctrl+I]"/>
-                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out) [Ctrl+O]"/>
+                                <Button Content="📥 Add Delivery (In)" Classes="MaterialBtn Success" Command="{Binding OpenStockInDialogCommand}" ToolTip.Tip="Log a new stock delivery (stock in) &#x0A;[Ctrl+I]"/>
+                                <Button Content="📤 Log Request (Out)" Classes="MaterialBtn Primary" Command="{Binding OpenStockOutDialogCommand}" ToolTip.Tip="Log a new stock request (stock out) &#x0A;[Ctrl+O]"/>
                                 
                                 <Separator Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="1" Margin="0,8"/>
 
                                 <TextBlock Text="Manage Database" Classes="SectionHeader"/>
-                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item [Ctrl+N]"/>
+                                <Button Content="➕ Add New Item" Classes="MaterialBtn Secondary" Command="{Binding OpenAddDialogCommand}" ToolTip.Tip="Add a new inventory item &#x0A;[Ctrl+N]"/>
                                 <Button Content="🗑️ Delete Selected" Classes="MaterialBtn Danger" 
                                         Command="{Binding OpenDeleteDialogCommand}" 
                                         CommandParameter="{Binding #InventoryGrid.SelectedItems}"
@@ -659,7 +661,7 @@
                                 <TextBlock Text="System Utilities" Classes="SectionHeader"/>
 
                                 <Grid ColumnDefinitions="*,*">
-                                    <Button Grid.Column="0" Classes="MaterialBtn Secondary" Command="{Binding ImportDataCommand}" Margin="0,0,5,0" HorizontalContentAlignment="Center" ToolTip.Tip="Import data from xlsx file">
+                                    <Button Grid.Column="0" Classes="MaterialBtn Secondary" Command="{Binding ImportDataCommand}" Margin="0,0,5,0" HorizontalContentAlignment="Center" ToolTip.Tip="Import data from xlsx file &#x0A;[Ctrl+Shift+I]">
                                         <Panel>
                                             <TextBlock Text="📥 Import" IsVisible="{Binding !IsImporting}" HorizontalAlignment="Center"/>
                                             <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsImporting}" HorizontalAlignment="Center">
@@ -668,7 +670,7 @@
                                         </Panel>
                                     </Button>
 
-                                    <Button Grid.Column="1" Classes="MaterialBtn Secondary" Command="{Binding ExportDataCommand}" Margin="5,0,0,0" HorizontalContentAlignment="Center" ToolTip.Tip="Export data to xlsx file">
+                                    <Button Grid.Column="1" Classes="MaterialBtn Secondary" Command="{Binding ExportDataCommand}" Margin="5,0,0,0" HorizontalContentAlignment="Center" ToolTip.Tip="Export data to xlsx file &#x0A;[Ctrl+Shift+I]">
                                         <Panel>
                                             <TextBlock Text="📤 Export" IsVisible="{Binding !IsExporting}" HorizontalAlignment="Center"/>
                                             <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding IsExporting}" HorizontalAlignment="Center">
@@ -692,7 +694,7 @@
             </TabItem>
 
             <!-- TRANSACTION LOG TAB -->
-            <TabItem Header="Stock In/Out Log" FontSize="18" FontWeight="Black" ToolTip.Tip="Stock In/Out Log [Ctrl + 2]">
+            <TabItem Header="Stock In/Out Log" FontSize="18" FontWeight="Black" ToolTip.Tip="Stock In/Out Log &#x0A;[Ctrl + 2]">
                 <Grid Classes="TabContainer" RowDefinitions="Auto, *">
                     <Grid Grid.Row="0" Margin="12,3,10,3">
                         <Button Content="🗑️ Delete Selected Logs" 
