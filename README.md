@@ -15,16 +15,16 @@ Simple offline inventory system made with Avalonia UI
   <img width="580" height="651" alt="image" src="https://github.com/user-attachments/assets/e6be7475-e1b2-45b4-8edb-1f7a9235dd43" />
 
 ## Transactions
-- `Add Delivery (In)` button or the stock-in button will open stock-in modal to add new item in the selected item in the inventory grid
+- `Add Delivery (In)` `Ctrl + I` button or the stock-in button will open stock-in modal to add new item in the selected item in the inventory grid
   <img width="463" height="499" alt="image" src="https://github.com/user-attachments/assets/d7a78b66-eb89-4ee7-99fb-145b88be7e21" />
 - `Note:` This modal automatically selects the item code when you open it, you can click the comboBox to re-select other items in the list
   <img width="505" height="582" alt="image" src="https://github.com/user-attachments/assets/e8c930de-95bf-40dc-acc3-4e8490abec01" />
-- `Log Request (out)` button or stock-out button will open the stock-out modal, same mechanics with the stock-in button
+- `Log Request (out)` `Ctrl + O` button or stock-out button will open the stock-out modal, same mechanics with the stock-in button
   <img width="472" height="506" alt="image" src="https://github.com/user-attachments/assets/692651c3-6428-4333-9fec-a5bda05341ab" />
 
 ## System Utilities
-- the `Export` button will export all the data into a preformatted .xlsx file
-- `Import` button will import the .xlsx file into the inventory system
+- the `Export` `Ctrl + Shift + E` button will export all the data into a preformatted .xlsx file
+- `Import` `Ctrl + Shift + I` button will import the .xlsx file into the inventory system
 - `Note:` the import function is strict at the moment and it needs exact column number for the data to be imported
   <img width="298" height="111" alt="image" src="https://github.com/user-attachments/assets/b6520f42-6ff2-49fd-bff3-f2717dfb3b28" />
   <img width="1305" height="417" alt="image" src="https://github.com/user-attachments/assets/20347597-7d9a-4de0-9e90-1545e84215d0" />
