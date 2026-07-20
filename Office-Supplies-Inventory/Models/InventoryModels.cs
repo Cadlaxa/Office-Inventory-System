@@ -41,8 +41,8 @@ namespace Office_Supplies_Inventory {
                 if (!int.TryParse(value, out int parsedStock)) {
                     throw new Avalonia.Data.DataValidationException("Stock must be a valid number.");
                 }
-                if (parsedStock > 500) {
-                    throw new Avalonia.Data.DataValidationException("Maximum Stock limit is 500.");
+                if (parsedStock > 5000) {
+                    throw new Avalonia.Data.DataValidationException("Maximum Stock limit is 5000.");
                 }
                 if (parsedStock < 0) {
                     throw new Avalonia.Data.DataValidationException("Stock value cannot be negative.");
@@ -94,8 +94,8 @@ namespace Office_Supplies_Inventory {
                 if (!int.TryParse(value, out int parsedQuantity)) {
                     throw new Avalonia.Data.DataValidationException("Quantity must be a valid number.");
                 }
-                if (parsedQuantity > 500) {
-                    throw new Avalonia.Data.DataValidationException("Maximum Quantity limit is 500.");
+                if (parsedQuantity > 5000) {
+                    throw new Avalonia.Data.DataValidationException("Maximum Quantity limit is 5000.");
                 }
                 if (parsedQuantity < 0) {
                     throw new Avalonia.Data.DataValidationException("Quantity value cannot be negative.");

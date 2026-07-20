@@ -340,7 +340,7 @@
         <KeyBinding Command="{Binding ExportDataCommand}" Gesture="Ctrl+Shift+E"/>
     </Window.KeyBindings>
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, *" DragDrop.AllowDrop="True">
         
         <!-- TOP NAVIGATION BAR -->
         <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" 
@@ -358,7 +358,7 @@
                         Classes="SearchBar"
                         MaxWidth="500" MinWidth="500" Height="40" Margin="40,0"
                         HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                        ToolTip.Tip="Search any entries in Inventory or in Stock logs">
+                        ToolTip.Tip="Search any entries in Inventory or in Stock logs&#x0A;[Ctrl + L]">
                     
                     <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -403,7 +403,7 @@
                             </ItemsControl>
 
                             <!-- The Transparent Input Field -->
-                            <AutoCompleteBox Classes="TransparentSearch" Text="{Binding SearchQuery}"
+                            <AutoCompleteBox x:Name="MainSearchBox" Classes="TransparentSearch" Text="{Binding SearchQuery}"
                                             ItemsSource="{Binding SearchCommands}"
                                             MinimumPrefixLength="0"
                                             FilterMode="Contains"
@@ -1185,9 +1185,12 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
                     <StackPanel Spacing="12" Margin="4">
                         <TextBlock Text="{Binding EditItemForm.ItemCode, StringFormat='Editing: {0}'}" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Item (Identifier/Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        <TextBox Text="{Binding EditItemForm.ItemCode}" x:Name="EditItemDescTextBox" Watermark="Assign an Item Code here..."/>
                         
                         <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                        <TextBox Text="{Binding EditItemForm.Description}" x:Name="EditItemDescTextBox" Watermark="e.g., Bond Paper (A4)"/>
+                        <TextBox Text="{Binding EditItemForm.Description}" Watermark="e.g., Bond Paper (A4)"/>
 
                         <TextBlock Text="Manufacturer / Supplier:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                         <TextBox Text="{Binding EditItemForm.ManufacturerSupplier}" Watermark="e.g., DBM PS"/>
@@ -1268,6 +1271,56 @@
                         <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseDeleteLogDialogCommand}" Margin="0,0,8,0"/>
                         <Button Grid.Column="1" Content="Delete Logs" Classes="MaterialBtn Danger" Command="{Binding ConfirmDeleteLogCommand}" Margin="8,0,0,0" IsDefault="True"/>
                     </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Export Complete Confirmation Dialog -->
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsExportCompleteDialogVisible}">
+            <Border Classes="MaterialCard" Width="400" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <!-- Excel-style Green color for success -->
+                    <TextBlock Text="Export Successful" FontWeight="Bold" FontSize="20" Foreground="#107C41"/>
+                    <TextBlock Text="Your inventory data has been successfully exported. Would you like to open the file now?" TextWrapping="Wrap"/>
+                    
+                    <Grid ColumnDefinitions="*, *" Margin="0,10,0,0">
+                        <Button Grid.Column="0" 
+                                Content="Close" 
+                                Classes="MaterialBtn Secondary" 
+                                Command="{Binding CloseExportDialogCommand}" 
+                                Margin="0,0,8,0"/>
+                        
+                        <Button Grid.Column="1" 
+                                Content="Open File" 
+                                Classes="MaterialBtn Primary" 
+                                Command="{Binding OpenExportedFileCommand}" 
+                                Margin="8,0,0,0" 
+                                IsDefault="True"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- dnd modal -->
+        <Grid x:Name="DragDropOverlay" Classes="DialogBackdrop" Grid.RowSpan="2" ZIndex="1000" IsVisible="False" IsHitTestVisible="False">
+            <Border Classes="MaterialCard" 
+                    Width="400" 
+                    Padding="0,40"
+                    CornerRadius="24" 
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="📂" 
+                            FontSize="64" 
+                            HorizontalAlignment="Center"/>
+                    <TextBlock Text="Drop Excel File Here" 
+                            FontWeight="Bold" 
+                            FontSize="20" 
+                            HorizontalAlignment="Center"/>
+                    <TextBlock Text="Supported formats: .xlsx and .xlsm" 
+                            TextWrapping="Wrap" 
+                            HorizontalAlignment="Center" 
+                            Opacity="0.7"/>
                 </StackPanel>
             </Border>
         </Grid>

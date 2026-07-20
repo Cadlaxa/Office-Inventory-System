@@ -32,6 +32,10 @@ public partial class MainWindow: Window {
 
         InitializeComponent();
         LoadSettings();
+        AddHandler(DragDrop.DragEnterEvent, Window_DragEnter);
+        AddHandler(DragDrop.DragLeaveEvent, Window_DragLeave);
+        AddHandler(DragDrop.DragOverEvent, Window_DragOver);
+        AddHandler(DragDrop.DropEvent, Window_Drop);
         var viewModel = new MainViewModel();
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         DataContext = viewModel;
@@ -95,6 +99,58 @@ public partial class MainWindow: Window {
             };
             
             _sparkle.StartLoop(true, true);
+        }
+    }
+    
+    private void Window_DragEnter(object? sender, DragEventArgs e) {
+        if (e.Data.Contains(Avalonia.Input.DataFormats.Files)) {
+            if (!DragDropOverlay.IsVisible) {
+                DragDropOverlay.IsVisible = true;
+                DragDropOverlay.Classes.Add("show"); 
+            }
+        }
+    }
+
+    private void Window_DragLeave(object? sender, DragEventArgs e) {
+        var pos = e.GetPosition(this);
+        // ONLY hide the overlay if the mouse cursor physically crosses outside the edges of the window
+        if (pos.X <= 0 || pos.Y <= 0 || pos.X >= this.Bounds.Width || pos.Y >= this.Bounds.Height) {
+            DragDropOverlay.Classes.Remove("show");
+            DragDropOverlay.IsVisible = false;
+        }
+    }
+
+    private void Window_DragOver(object? sender, DragEventArgs e) {
+        if (e.Data.Contains(Avalonia.Input.DataFormats.Files)) {
+            e.DragEffects = DragDropEffects.Copy;
+        } else {
+            e.DragEffects = DragDropEffects.None;
+        }
+    }
+
+    private async void Window_Drop(object? sender, DragEventArgs e) {
+        DragDropOverlay.Classes.Remove("show");
+        DragDropOverlay.IsVisible = false;
+
+        if (e.Data.Contains(Avalonia.Input.DataFormats.Files)) {
+            var files = e.Data.GetFiles();
+            var firstFile = files?.FirstOrDefault();
+            
+            if (firstFile != null) {
+                string filePath = firstFile.Path.LocalPath ?? string.Empty;
+
+                if (filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) || 
+                    filePath.EndsWith(".xlsm", StringComparison.OrdinalIgnoreCase)) {
+                    
+                    if (DataContext is MainViewModel vm) {
+                        await vm.ImportDataFromFileAsync(filePath);
+                    }
+                } else {
+                    if (DataContext is MainViewModel vm) {
+                        vm.ShowNotification("Invalid file! Please drop an .xlsx or .xlsm file.", true); 
+                    }
+                }
+            }
         }
     }
 
@@ -321,6 +377,11 @@ public partial class MainWindow: Window {
     }
 
     private void Window_KeyDown(object? sender, KeyEventArgs e) {
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.L) {
+            MainSearchBox.Focus();
+            e.Handled = true;
+            return;
+        }
         if (e.Key == Key.Escape) {
             if (DataContext is MainViewModel vm) {
                 if (vm.IsAddDialogVisible) {
@@ -339,6 +400,9 @@ public partial class MainWindow: Window {
                     vm.CloseDeleteDialogCommand.Execute(null);
                 }
                 else if (vm.IsDeleteLogDialogVisible) {
+                    vm.CloseDeleteLogDialogCommand.Execute(null);
+                }
+                else if (vm.IsExportCompleteDialogVisible) {
                     vm.CloseDeleteLogDialogCommand.Execute(null);
                 }
             }

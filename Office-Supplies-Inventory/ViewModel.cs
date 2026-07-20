@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using ClosedXML.Excel;
 using System.IO;
+using Serilog;
 
 namespace Office_Supplies_Inventory;
 
@@ -352,9 +353,9 @@ public partial class MainViewModel : ObservableObject {
     
     [RelayCommand]
     private void SaveNewItem() {
+        // If the user leaves the Item Code blank, assign a unique temporary placeholder
         if (string.IsNullOrWhiteSpace(NewItemForm.ItemCode)) {
-            ShowNotification("Error: Item Code is required!", true);
-            return;
+            NewItemForm.ItemCode = $"PENDING-{DateTime.Now:MMddHHmmss}";
         }
         bool isDuplicate = InventoryList.Any(item => 
             string.Equals(item.ItemCode, NewItemForm.ItemCode, StringComparison.OrdinalIgnoreCase));
@@ -478,7 +479,13 @@ public partial class MainViewModel : ObservableObject {
     // --- STOCK OUT LOGIC ---
 
     [RelayCommand]
-    private void OpenStockOutDialog() {
+    private async Task OpenStockOutDialog() {
+        if (SelectedItem != null && SelectedItem.ItemCode.StartsWith("PENDING-")) {
+            ShowNotification("Error: Please assign a valid Item Code before logging request stock out.", true);
+            await Task.Delay(800);
+            OpenEditDialog();
+            return;
+        }
         if (SelectedItem != null && SelectedItem.Final_Stock <= 0) {
             ShowNotification($"Cannot stock out. {SelectedItem.ItemCode} is completely out of stock.", true);
             return; 
@@ -541,7 +548,13 @@ public partial class MainViewModel : ObservableObject {
     // --- STOCK IN LOGIC ---
 
     [RelayCommand]
-    private void OpenStockInDialog() {
+    private async Task OpenStockInDialog() {
+        if (SelectedItem != null && SelectedItem.ItemCode.StartsWith("PENDING-")) {
+            ShowNotification("Error: Please assign a valid Item Code before adding deliveries.", true);
+            await Task.Delay(800);
+            OpenEditDialog();
+            return;
+        }
         StockInForm = new StockTransactionLog {
             ItemCode = SelectedItem?.ItemCode ?? string.Empty,
             ItemDescription = SelectedItem?.Description ?? string.Empty,
@@ -658,7 +671,7 @@ public partial class MainViewModel : ObservableObject {
         LoadData();
     }
 
-    private async void ShowNotification(string message, bool isError = false) {
+    public async void ShowNotification(string message, bool isError = false) {
         SnackbarMessage = message;
         SnackbarColor = isError ? "#D93025" : "#323232";
         SnackbarOpacity = 1.0;
@@ -718,6 +731,32 @@ public partial class MainViewModel : ObservableObject {
     }
 
     // --- EXPORT TO EXCEL ---
+    [ObservableProperty]
+    private bool _isExportCompleteDialogVisible;
+    private string _lastExportedFilePath = string.Empty;
+
+    [RelayCommand]
+    private void CloseExportDialog() {
+        IsExportCompleteDialogVisible = false;
+    }
+
+    [RelayCommand]
+    private void OpenExportedFile() {
+        IsExportCompleteDialogVisible = false;
+
+        if (!string.IsNullOrEmpty(_lastExportedFilePath) && System.IO.File.Exists(_lastExportedFilePath)) {
+            try {
+                // Setting UseShellExecute = true ensures this works across Windows, macOS, and Linux
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo {
+                    FileName = _lastExportedFilePath,
+                    UseShellExecute = true 
+                });
+            } catch (Exception ex) {
+                ShowNotification($"Could not open file: {ex.Message}", true);
+                Log.Error($"Could not open file: {ex.Message}");
+            }
+        }
+    }
     [RelayCommand]
     private async Task ExportDataAsync() {
         var storage = await GetStorageProvider();
@@ -800,7 +839,8 @@ public partial class MainViewModel : ObservableObject {
                     var item = _fullInventoryList[i];
                     int row = i + 4;
 
-                    invSheet.Cell(row, 1).Value = item.ItemCode;
+                    // --- CHANGED: Hides PENDING codes by outputting a blank string ---
+                    invSheet.Cell(row, 1).Value = item.ItemCode != null && item.ItemCode.StartsWith("PENDING-") ? "" : item.ItemCode;
                     invSheet.Cell(row, 2).Value = item.Description;
                     invSheet.Cell(row, 3).Value = item.ManufacturerSupplier;
                     invSheet.Cell(row, 4).Value = item.AsOfDate;
@@ -893,7 +933,8 @@ public partial class MainViewModel : ObservableObject {
                         logSheet.Cell(row, 3).Value = log.ItemDescription;
                         logSheet.Cell(row, 4).Value = log.Quantity;
                         logSheet.Cell(row, 5).Value = log.TransactionType;
-                        logSheet.Cell(row, 6).Value = log.ItemCode;
+                        // --- CHANGED: Hides PENDING codes by outputting a blank string ---
+                        logSheet.Cell(row, 6).Value = log.ItemCode != null && log.ItemCode.StartsWith("PENDING-") ? "" : log.ItemCode;
                         logSheet.Cell(row, 7).Value = log.Remarks;
 
                         var rowRange = logSheet.Range(row, 1, row, 7);
@@ -912,9 +953,14 @@ public partial class MainViewModel : ObservableObject {
                 }
 
                 workbook.SaveAs(filePath);
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => {
+                    ShowNotification("Excel export completed successfully!");
+                    _lastExportedFilePath = filePath;
+                    IsExportCompleteDialogVisible = true;
+                });
+                
+                Serilog.Log.Information("Data exported to Excel at {FilePath}", filePath);
             });
-            ShowNotification("Excel export completed successfully!");
-            Serilog.Log.Information("Data exported to Excel at {FilePath}", filePath);
 
         } catch (Exception ex) {
             ShowNotification("Error: " + ex.Message, true);
@@ -934,17 +980,22 @@ public partial class MainViewModel : ObservableObject {
             AllowMultiple = false,
             FileTypeFilter = new[] {
                 new FilePickerFileType("Excel Files") {
-                    Patterns = new[] { "*.xlsx" }
+                    Patterns = new[] { "*.xlsx", "*.xlsm" }
                 }
             }
         });
 
         if (files == null || files.Count == 0) return;
+        
+        string filePath = files[0].TryGetLocalPath() ?? string.Empty;
+        if (string.IsNullOrEmpty(filePath)) return;
+
+        await ImportDataFromFileAsync(filePath);
+    }
+
+    public async Task ImportDataFromFileAsync(string filePath) {
         IsImporting = true;
         try {
-            string filePath = files[0].TryGetLocalPath() ?? string.Empty;
-            if (string.IsNullOrEmpty(filePath)) return;
-
             int addedItems = 0;
             int updatedItems = 0;
             int addedLogs = 0;
@@ -958,13 +1009,50 @@ public partial class MainViewModel : ObservableObject {
                     var rows = invSheet.RowsUsed().Skip(3);
 
                     foreach(var row in rows) {
-                        var itemCode = row.Cell(1).GetString();
-                        if (string.IsNullOrWhiteSpace(itemCode)) continue;
+                        var excelItemCode = row.Cell(1).GetString();
+                        var excelDesc = row.Cell(2).GetString();
+                        var excelMfg = row.Cell(3).GetString();
 
+                        // Skip completely blank rows
+                        if (string.IsNullOrWhiteSpace(excelItemCode) && string.IsNullOrWhiteSpace(excelDesc)) continue;
+
+                        // MATCHING LOGIC STEP 1: Try exact ItemCode match first
+                        var existingItem = _fullInventoryList.FirstOrDefault(i => 
+                            !string.IsNullOrWhiteSpace(excelItemCode) && i.ItemCode == excelItemCode);
+
+                        // MATCHING LOGIC STEP 2: If no code match, try Description + Manufacturer match
+                        if (existingItem == null && !string.IsNullOrWhiteSpace(excelDesc)) {
+                            existingItem = _fullInventoryList.FirstOrDefault(i => 
+                                i.Description == excelDesc && 
+                                i.ManufacturerSupplier == excelMfg);
+                        }
+
+                        string finalItemCode = excelItemCode;
+                        bool isUpgradingCode = false;
+
+                        // RESOLVE THE ITEM CODE
+                        if (existingItem != null) {
+                            if (string.IsNullOrWhiteSpace(excelItemCode)) {
+                                // Re-importing a blank item. Reuse the DB's existing code to prevent duplicates!
+                                finalItemCode = existingItem.ItemCode;
+                            } 
+                            else if (existingItem.ItemCode.StartsWith("PENDING-") && !string.IsNullOrWhiteSpace(excelItemCode)) {
+                                // Upgrading a PENDING code to a REAL Excel code
+                                finalItemCode = excelItemCode;
+                                isUpgradingCode = true; 
+                            }
+                        } 
+                        else if (string.IsNullOrWhiteSpace(excelItemCode)) {
+                            // Completely new item with no code
+                            string randomSuffix = Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
+                            finalItemCode = $"PENDING-{DateTime.Now:MMddHHmmss}-{randomSuffix}";
+                        }
+
+                        // Build the item
                         var item = new InventoryItem {
-                            ItemCode = itemCode,
-                            Description = row.Cell(2).GetString(),
-                            ManufacturerSupplier = row.Cell(3).GetString(),
+                            ItemCode = finalItemCode,
+                            Description = excelDesc,
+                            ManufacturerSupplier = excelMfg,
                             AsOfDate = row.Cell(4).GetString(),
                             InitialStock = row.Cell(5).TryGetValue<int>(out int initial) ? initial : 0,
                             Stock_In = row.Cell(6).TryGetValue<int>(out int inStock) ? inStock : 0,
@@ -976,11 +1064,17 @@ public partial class MainViewModel : ObservableObject {
                         };
                         exactExcelItems.Add(item);
 
-                        var existingItem = _fullInventoryList.FirstOrDefault(i => i.ItemCode == item.ItemCode);
-                        if (existingItem != null) {
+                        if (isUpgradingCode) {
+                            // Safest way to change a Primary Key: Remove the old PENDING row, add the REAL row
+                            _repository.DeleteItem(existingItem.ItemCode); // Make sure your repository has a DeleteItem method!
+                            _repository.AddItem(item);
+                            updatedItems++;
+                        } 
+                        else if (existingItem != null) {
                             _repository.UpdateItem(item);
                             updatedItems++;
-                        } else {
+                        } 
+                        else {
                             _repository.AddItem(item);
                             addedItems++;
                         }
@@ -994,14 +1088,27 @@ public partial class MainViewModel : ObservableObject {
 
                         foreach(var row in logRows) {
                             var date = row.Cell(1).GetString();
-                            var itemCode = row.Cell(6).GetString();
+                            if (string.IsNullOrWhiteSpace(date)) {
+                                date = string.Empty; 
+                            }
 
-                            if (string.IsNullOrWhiteSpace(date) || string.IsNullOrWhiteSpace(itemCode)) continue;
+                            var itemCode = row.Cell(6).GetString();
+                            var description = row.Cell(3).GetString();
+
+                            // Skip completely empty "ghost" rows
+                            if (string.IsNullOrWhiteSpace(itemCode) && string.IsNullOrWhiteSpace(description)) {
+                                continue; 
+                            }
+
+                            if (string.IsNullOrWhiteSpace(itemCode)) {
+                                string randomSuffix = Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
+                                itemCode = $"PENDING-LOG-{DateTime.Now:MMddHHmmss}-{randomSuffix}";
+                            }
 
                             var log = new StockTransactionLog {
                                 Date = date,
                                 NameRequested = row.Cell(2).GetString(),
-                                ItemDescription = row.Cell(3).GetString(),
+                                ItemDescription = description,
                                 Quantity = row.Cell(4).TryGetValue<int>(out int q) ? q : 0,
                                 TransactionType = row.Cell(5).GetString(),
                                 ItemCode = itemCode,
@@ -1030,7 +1137,7 @@ public partial class MainViewModel : ObservableObject {
             });
 
             LoadData();
-            ShowNotification($"Import success: {addedItems} items added, {updatedItems} updated. {addedLogs} logs imported.");
+            ShowNotification($"Import success: {addedItems} added, {updatedItems} updated. {addedLogs} logs imported.");
 
         } catch (Exception ex) {
             ShowNotification("Error: " + ex.Message, true);
