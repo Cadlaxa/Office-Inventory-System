@@ -42,7 +42,54 @@ jobs:
     - name: Publish App
       run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -p:Version=1.0.${{ github.run_number }} -o ./publish_output
 
-    # Zip the outputs so they are easy to download (Windows uses zip, Mac/Linux use tar)
+    # ==========================================
+    # macOS ONLY: Package into an .app bundle
+    # ==========================================
+    - name: Package macOS .app
+      if: matrix.os == 'macos-latest'
+      run: |
+        APP_NAME="Office-Supplies-Inventory"
+        APP_DIR="./publish_output/$APP_NAME.app"
+        
+        # 1. Create the Apple standard folder structure
+        mkdir -p "$APP_DIR/Contents/MacOS"
+        mkdir -p "$APP_DIR/Contents/Resources"
+        
+        # 2. Find the raw binary (the file with no extension) and move it into the MacOS folder
+        for file in ./publish_output/*; do
+            if [[ -f "$file" && "$file" != *.* ]]; then
+                mv "$file" "$APP_DIR/Contents/MacOS/$APP_NAME"
+                chmod +x "$APP_DIR/Contents/MacOS/$APP_NAME"
+                break
+            fi
+        done
+        
+        # 3. Create a basic Info.plist so macOS recognizes it as a GUI app
+        cat <<EOF > "$APP_DIR/Contents/Info.plist"
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleExecutable</key>
+            <string>$APP_NAME</string>
+            <key>CFBundleName</key>
+            <string>Office Supplies Inventory</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.isms.officesupplies</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0.${{ github.run_number }}</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>10.13</string>
+        </dict>
+        </plist>
+        EOF
+        
+        # 4. Clean up any leftover files in the output directory so they don't get zipped
+        find ./publish_output -maxdepth 1 -type f -delete
+
+    # Zip the outputs so they are easy to download
     - name: Archive Release (Windows)
       if: matrix.os == 'windows-latest'
       uses: vimtor/action-zip@v1.2
@@ -52,7 +99,13 @@ jobs:
 
     - name: Archive Release (Mac/Linux)
       if: matrix.os != 'windows-latest'
-      run: tar -czvf OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }} -C ./publish_output .
+      # Notice we now tar the exact folder structure needed
+      run: |
+        if [ "${{ matrix.os }}" == "macos-latest" ]; then
+          tar -czvf OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }} -C ./publish_output "Office-Supplies-Inventory.app"
+        else
+          tar -czvf OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }} -C ./publish_output .
+        fi
 
     # Temporarily upload the zipped files to GitHub so Job 2 can grab them
     - name: Upload Artifacts
@@ -61,21 +114,18 @@ jobs:
         name: app-binaries-${{ matrix.rid }}
         path: OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }}
 
-
   # ==========================================
   # JOB 2: Create the GitHub Release
   # ==========================================
   release:
     name: Publish to Releases Tab
-    needs: build # Crucial: This tells GitHub to wait until all 3 builds are 100% done!
+    needs: build 
     runs-on: ubuntu-latest
     
-    # We need permission to write to your repository's Releases tab
     permissions:
       contents: write 
 
     steps:
-    # Download the 3 zipped files we made in Job 1
     - name: Download all build artifacts
       uses: actions/download-artifact@v4
       with:
@@ -95,19 +145,35 @@ jobs:
         <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
           <channel>
             <title>Office Supplies Inventory Updates</title>
+            
+            <!-- Windows Update -->
             <item>
-              <title>Version $VERSION</title>
-              <description>Version $VERSION is now available! We strongly recommend updating to keep your inventory system running smoothly and to receive the latest features.</description>
+              <title>Version $VERSION (Windows)</title>
+              <description>Version $VERSION is now available!</description>
               <pubDate>$PUBDATE</pubDate>
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-win-x64-v$VERSION.zip" sparkle:version="$VERSION" sparkle:os="windows" type="application/octet-stream" />
-              <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-osx-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="macos" type="application/octet-stream" />
+            </item>
+            
+            <!-- macOS Update -->
+            <item>
+              <title>Version $VERSION (macOS)</title>
+              <description>Version $VERSION is now available!</description>
+              <pubDate>$PUBDATE</pubDate>
+              <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-osx-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="mac" type="application/octet-stream" />
+            </item>
+            
+            <!-- Linux Update -->
+            <item>
+              <title>Version $VERSION (Linux)</title>
+              <description>Version $VERSION is now available!</description>
+              <pubDate>$PUBDATE</pubDate>
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-linux-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="linux" type="application/octet-stream" />
             </item>
+
           </channel>
         </rss>
         EOF
 
-    # Create the Release and attach the files!
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -116,16 +182,16 @@ jobs:
         body: |
           🚀 Automatically generated release for version 1.0.${{ github.run_number }}.
 
-          **Important Note for macOS Users:** If you see an error that says "This app is damaged and can't be opened," please follow these steps:
+          ### 🍏 Important Note for macOS Users
+          By default, macOS flags apps downloaded from the internet as "damaged." To fix this and run the app safely:
           
-          1. Open a terminal.
-          2. Run the following command: 
-             ```
+          1. Download and extract the `.tar.gz` file.
+          2. Drag **Office-Supplies-Inventory.app** into your **Applications** folder.
+          3. Open your Terminal and paste the following command:
+             ```bash
              xattr -rc /Applications/Office-Supplies-Inventory.app
              ```
-          3. Try opening the app again.
-
-          This command removes the quarantine attribute that macOS applies to downloaded apps, which can sometimes cause this error.
+          4. Press Enter. You can now launch the app normally from your Applications folder!
 
           **Downloads available below:**
           * Windows (.zip)

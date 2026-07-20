@@ -46,8 +46,14 @@ public partial class MainWindow: Window {
         if (!Design.IsDesignMode) {
             // Dynamically set the executable name based on the OS
             string executableName = "Office-Supplies-Inventory.exe";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                executableName = "Office-Supplies-Inventory"; // No .exe on Mac/Linux
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+                // macOS MUST target the .app bundle wrapper to restart correctly
+                executableName = "Office-Supplies-Inventory.app"; 
+            } 
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                // Linux continues to use the raw binary with no extension
+                executableName = "Office-Supplies-Inventory"; 
             }
 
             _sparkle = new SparkleUpdater(appcastUrl, new Ed25519Checker(SecurityMode.Unsafe)) {
