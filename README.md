@@ -15,7 +15,8 @@ Simple offline inventory system made with Avalonia UI
   <img width="580" height="651" alt="image" src="https://github.com/user-attachments/assets/e6be7475-e1b2-45b4-8edb-1f7a9235dd43" />
 
 ## Transactions
-- `Add Delivery (In)` `Ctrl + I` button or the stock-in button will open stock-in modal to add new item in the selected item in the inventory grid
+- `Add Delivery (In)` `Ctrl + I` button or the stock-in button will open stock-in modal to add new item in the selected item in the inventory grid.
+
   <img width="463" height="499" alt="image" src="https://github.com/user-attachments/assets/d7a78b66-eb89-4ee7-99fb-145b88be7e21" />
 - `Note:` This modal automatically selects the item code when you open it, you can click the comboBox to re-select other items in the list
   <img width="505" height="582" alt="image" src="https://github.com/user-attachments/assets/e8c930de-95bf-40dc-acc3-4e8490abec01" />
@@ -24,14 +25,18 @@ Simple offline inventory system made with Avalonia UI
 
 ## System Utilities
 - the `Export` `Ctrl + Shift + E` button will export all the data into a preformatted .xlsx file
+- <img width="416" height="196" alt="image" src="https://github.com/user-attachments/assets/7b85368f-3d1e-4e4c-8b33-9091c81c298d" />
+
 - `Import` `Ctrl + Shift + I` button will import the .xlsx file into the inventory system
 - `Note:` the import function is strict at the moment and it needs exact column number for the data to be imported
-  <img width="298" height="111" alt="image" src="https://github.com/user-attachments/assets/b6520f42-6ff2-49fd-bff3-f2717dfb3b28" />
-  <img width="1305" height="417" alt="image" src="https://github.com/user-attachments/assets/20347597-7d9a-4de0-9e90-1545e84215d0" />
-  <img width="922" height="421" alt="image" src="https://github.com/user-attachments/assets/55004052-bc6b-4a96-9f3f-f920ced8d940" />
+- You can also import the file via drag & drop.
+- <img width="527" height="328" alt="image" src="https://github.com/user-attachments/assets/7fc58fa3-062b-4a99-acb3-23c62eb2b0fe" />
+- <img width="298" height="111" alt="image" src="https://github.com/user-attachments/assets/b6520f42-6ff2-49fd-bff3-f2717dfb3b28" />
+- <img width="1305" height="417" alt="image" src="https://github.com/user-attachments/assets/20347597-7d9a-4de0-9e90-1545e84215d0" />
+- <img width="922" height="421" alt="image" src="https://github.com/user-attachments/assets/55004052-bc6b-4a96-9f3f-f920ced8d940" />
   
 # Search Functions
-- The search bar will provide search clips to easily find the exact entry from the Inventory or the Stock grid
+- The search bar `Ctrl + L` will provide search clips to easily find the exact entry from the Inventory or the Stock grid
   <img width="586" height="86" alt="image" src="https://github.com/user-attachments/assets/c4fd92d0-ec2f-4781-a8bb-ae11e51c46f5" />
 
 # Todo:
