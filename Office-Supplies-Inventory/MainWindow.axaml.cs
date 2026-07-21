@@ -42,6 +42,10 @@ public partial class MainWindow: Window {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         this.Title = $"Office Supplies Inventory System v{version.Major}.{version.Minor}.{version.Build}";
         string appcastUrl = "https://github.com/Cadlaxa/Office-Inventory-System/releases/latest/download/appcast.xml";
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && RuntimeInformation.OSArchitecture == Architecture.Arm64) {
+            appcastUrl = "https://github.com/Cadlaxa/Office-Inventory-System/releases/latest/download/appcast-osx-arm64.xml";
+        }
         
         if (!Design.IsDesignMode) {
             // Dynamically set the executable name based on the OS
