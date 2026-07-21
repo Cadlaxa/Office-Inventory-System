@@ -7,14 +7,14 @@ on:
 
 jobs:
   # ==========================================
-  # JOB 1: Compile the apps for all 3 Operating Systems
+  # JOB 1: Compile the apps for all Operating Systems
   # ==========================================
   build:
-    name: Build on ${{ matrix.os }}
+    name: Build ${{ matrix.rid }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        # Using an explicit include array perfectly isolates our 4 distinct builds
         include:
           - os: windows-latest
             rid: win-x64
@@ -24,6 +24,9 @@ jobs:
             ext: .tar.gz
           - os: macos-latest
             rid: osx-x64
+            ext: .tar.gz
+          - os: macos-latest
+            rid: osx-arm64
             ext: .tar.gz
 
     steps:
@@ -56,7 +59,6 @@ jobs:
         mkdir -p "$APP_DIR/Contents/Resources"
         
         # 2. Directly move the raw binary into the MacOS folder. 
-        # Using a wildcard safely handles both dashes and underscores in .csproj name
         mv ./publish_output/Office*Inventory "$APP_DIR/Contents/MacOS/$APP_NAME"
         chmod +x "$APP_DIR/Contents/MacOS/$APP_NAME"
         
@@ -95,7 +97,6 @@ jobs:
 
     - name: Archive Release (Mac/Linux)
       if: matrix.os != 'windows-latest'
-      # Notice we now tar the exact folder structure needed
       run: |
         if [ "${{ matrix.os }}" == "macos-latest" ]; then
           tar -czvf OfficeSuppliesInventory-${{ matrix.rid }}-v1.0.${{ github.run_number }}${{ matrix.ext }} -C ./publish_output "Office-Supplies-Inventory.app"
@@ -129,20 +130,20 @@ jobs:
         pattern: app-binaries-*
         merge-multiple: true
     
-    - name: Generate Appcast XML
+    - name: Generate Appcast XMLs
       run: |
         VERSION="1.0.${{ github.run_number }}"
         PUBDATE=$(date -R)
         REPO_URL="https://github.com/${{ github.repository }}"
         DOWNLOAD_URL="$REPO_URL/releases/download/v$VERSION"
         
+        # 1. Main Legacy Appcast (Windows, Linux, and macOS Intel)
         cat <<EOF > ./artifacts/appcast.xml
         <?xml version="1.0" encoding="UTF-8"?>
         <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
           <channel>
             <title>Office Supplies Inventory Updates</title>
             
-            <!-- Windows Update -->
             <item>
               <title>Version $VERSION (Windows)</title>
               <description>Version $VERSION is now available!</description>
@@ -150,15 +151,13 @@ jobs:
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-win-x64-v$VERSION.zip" sparkle:version="$VERSION" sparkle:os="windows" type="application/octet-stream" />
             </item>
             
-            <!-- macOS Update -->
             <item>
-              <title>Version $VERSION (macOS)</title>
+              <title>Version $VERSION (macOS Intel)</title>
               <description>Version $VERSION is now available!</description>
               <pubDate>$PUBDATE</pubDate>
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-osx-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="mac" type="application/octet-stream" />
             </item>
             
-            <!-- Linux Update -->
             <item>
               <title>Version $VERSION (Linux)</title>
               <description>Version $VERSION is now available!</description>
@@ -166,6 +165,22 @@ jobs:
               <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-linux-x64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="linux" type="application/octet-stream" />
             </item>
 
+          </channel>
+        </rss>
+        EOF
+
+        # 2. Apple Silicon Exclusive Appcast
+        cat <<EOF > ./artifacts/appcast-osx-arm64.xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+          <channel>
+            <title>Office Supplies Inventory Updates</title>
+            <item>
+              <title>Version $VERSION (macOS Apple Silicon)</title>
+              <description>Version $VERSION is now available! Optimizations for M-Series processors.</description>
+              <pubDate>$PUBDATE</pubDate>
+              <enclosure url="$DOWNLOAD_URL/OfficeSuppliesInventory-osx-arm64-v$VERSION.tar.gz" sparkle:version="$VERSION" sparkle:os="mac" type="application/octet-stream" />
+            </item>
           </channel>
         </rss>
         EOF
@@ -191,7 +206,8 @@ jobs:
 
           **Downloads available below:**
           * Windows (.zip)
-          * macOS (.tar.gz)
+          * macOS - Intel (.tar.gz)
+          * macOS - Apple Silicon (.tar.gz)
           * Linux (.tar.gz)
         files: ./artifacts/*
         draft: false
