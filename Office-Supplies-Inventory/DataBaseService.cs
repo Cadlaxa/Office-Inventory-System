@@ -25,7 +25,6 @@ public class InventoryRepository {
             CREATE TABLE IF NOT EXISTS InventoryRecords(
                 ItemCode TEXT PRIMARY KEY,
                 Description TEXT,
-                ManufacturerSupplier TEXT,
                 AsOfDate TEXT,
                 InitialStock INTEGER,
                 Stock_In INTEGER,
@@ -33,7 +32,8 @@ public class InventoryRepository {
                 Final_Stock INTEGER,
                 Location TEXT,
                 Remarks TEXT,
-                Status TEXT
+                Status TEXT,
+                DisplayOrder INTEGER DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS StockTransactionLog(
@@ -50,6 +50,7 @@ public class InventoryRepository {
 
             db.Execute(sql);
             Log.Information("Database verification complete.");
+            try { db.Execute("ALTER TABLE InventoryRecords ADD COLUMN DisplayOrder INTEGER DEFAULT 0;"); } catch { /* Column exists */ }
         } catch (Exception ex) {
             Log.Error(ex, "Failed to initialize the database tables!");
         }
@@ -60,7 +61,8 @@ public class InventoryRepository {
         try {
             Log.Debug("Fetching all inventory items from database...");
             using IDbConnection db = new SqliteConnection(_connectionString);
-            var items = db.Query < InventoryItem > ("SELECT * FROM InventoryRecords").ToList();
+            // ORDER BY DisplayOrder ASC ensures the lowest numbers are at the top, and the highest are at the bottom
+            var items = db.Query < InventoryItem > ("SELECT * FROM InventoryRecords ORDER BY DisplayOrder ASC").ToList();
             Log.Debug("Successfully fetched {Count} items.", items.Count);
             return items;
         } catch (Exception ex) {
@@ -182,8 +184,9 @@ public class InventoryRepository {
     public void AddItem(InventoryItem item) {
         try{
             using IDbConnection db = new SqliteConnection(_connectionString);
-            string sql = @"INSERT INTO InventoryRecords (ItemCode, Description, ManufacturerSupplier, AsOfDate, InitialStock, Stock_In, Stock_Out, Final_Stock, Location, Remarks, Status) 
-                           VALUES (@ItemCode, @Description, @ManufacturerSupplier, @AsOfDate, @InitialStock, @Stock_In, @Stock_Out, @Final_Stock, @Location, @Remarks, @Status)";
+            string sql = @"INSERT INTO InventoryRecords (ItemCode, Description, AsOfDate, InitialStock, Stock_In, Stock_Out, Final_Stock, Location, Remarks, Status, DisplayOrder) 
+                           VALUES (@ItemCode, @Description, @AsOfDate, @InitialStock, @Stock_In, @Stock_Out, @Final_Stock, @Location, @Remarks, @Status, 
+                           (SELECT COALESCE(MAX(DisplayOrder), 0) + 1 FROM InventoryRecords))";
             db.Execute(sql, item);
             Log.Information("Successfully added item {ItemCode}.", item.ItemCode);
         }
@@ -199,18 +202,16 @@ public class InventoryRepository {
             
             // UPDATE THE MAIN INVENTORY ITEM
             string updateItemSql = @"UPDATE InventoryRecords 
-                                    SET Description = @Description, 
-                                        ManufacturerSupplier = @ManufacturerSupplier, 
-                                        AsOfDate = @AsOfDate,
-                                        InitialStock = @InitialStock,
-                                        Stock_In = @Stock_In,
-                                        Stock_Out = @Stock_Out,
-                                        Final_Stock = @Final_Stock,
-                                        Location = @Location, 
-                                        Remarks = @Remarks,
-                                        Status = @Status 
-                                    WHERE ItemCode = @ItemCode";
-                                    
+                            SET Description = @Description, 
+                                AsOfDate = @AsOfDate,
+                                InitialStock = @InitialStock,
+                                Stock_In = @Stock_In,
+                                Stock_Out = @Stock_Out,
+                                Final_Stock = @Final_Stock,
+                                Location = @Location, 
+                                Remarks = @Remarks,
+                                Status = @Status 
+                            WHERE ItemCode = @ItemCode";
             db.Execute(updateItemSql, item);
 
             // CASCADING UPDATE: UPDATE ALL TRANSACTION LOGS FOR THIS ITEM
@@ -225,6 +226,12 @@ public class InventoryRepository {
             Log.Error(ex, "Failed to update item {ItemCode} and its cascading transaction logs.", item.ItemCode);
             throw; 
         }
+    }
+
+    public void UpdateItemOrders(List<InventoryItem> items) {
+        using IDbConnection db = new SqliteConnection(_connectionString);
+        string sql = "UPDATE InventoryRecords SET DisplayOrder = @DisplayOrder WHERE ItemCode = @ItemCode";
+        db.Execute(sql, items);
     }
 
     // DELETE

@@ -254,7 +254,6 @@ public partial class MainViewModel : ObservableObject {
                 filteredInventory = filteredInventory.Where(item =>
                     (item.ItemCode?.ToLower().Contains(val) == true) ||
                     (item.Description?.ToLower().Contains(val) == true) ||
-                    (item.ManufacturerSupplier?.ToLower().Contains(val) == true) ||
                     (item.Location?.ToLower().Contains(val) == true) ||
                     (item.Remarks?.ToLower().Contains(val) == true));
 
@@ -284,8 +283,7 @@ public partial class MainViewModel : ObservableObject {
                     
                     filteredLogs = Enumerable.Empty<StockTransactionLog>(); 
 
-                    if (prefix == "mfg:") filteredInventory = filteredInventory.Where(i => i.ManufacturerSupplier?.ToLower().Contains(val) == true);
-                    else if (prefix == "asf:") filteredInventory = filteredInventory.Where(i => i.AsOfDate?.ToLower().Contains(val) == true);
+                    if (prefix == "asf:") filteredInventory = filteredInventory.Where(i => i.AsOfDate?.ToLower().Contains(val) == true);
                     else if (prefix == "instock:") filteredInventory = filteredInventory.Where(i => i.InitialStockUI?.ToLower().Contains(val) == true);
                     else if (prefix == "in:") filteredInventory = filteredInventory.Where(i => i.Stock_In.ToString().ToLower().Contains(val) == true);
                     else if (prefix == "out:") filteredInventory = filteredInventory.Where(i => i.Stock_Out.ToString().ToLower().Contains(val) == true);
@@ -332,7 +330,6 @@ public partial class MainViewModel : ObservableObject {
         NewItemForm = new InventoryItem {
             ItemCode = string.Empty,
             Description = string.Empty,
-            ManufacturerSupplier = string.Empty,
             AsOfDate = System.DateTime.Now.ToString("dd-MMM-yy HH:mm"),
             InitialStock = 0,
             Stock_In = 0,
@@ -396,7 +393,6 @@ public partial class MainViewModel : ObservableObject {
         EditItemForm = new InventoryItem {
             ItemCode = SelectedItem.ItemCode,
             Description = SelectedItem.Description,
-            ManufacturerSupplier = SelectedItem.ManufacturerSupplier,
             InitialStockUI = SelectedItem.InitialStock.ToString(),
             Location = SelectedItem.Location,
             AsOfDate = SelectedItem.AsOfDate,
@@ -410,6 +406,30 @@ public partial class MainViewModel : ObservableObject {
         };
 
         IsEditDialogVisible = true;
+    }
+
+    [RelayCommand]
+    public void ReorderItems(Tuple<int, int> indexes) {
+        int oldIndex = indexes.Item1;
+        int newIndex = indexes.Item2;
+
+        if (oldIndex < 0 || newIndex < 0 || oldIndex >= InventoryList.Count || newIndex >= InventoryList.Count || oldIndex == newIndex)
+            return;
+
+        // Move the item in the UI collection
+        var itemToMove = InventoryList[oldIndex];
+        InventoryList.RemoveAt(oldIndex);
+        InventoryList.Insert(newIndex, itemToMove);
+
+        // Update the backend DisplayOrder values for the whole list
+        for (int i = 0; i < InventoryList.Count; i++) {
+            InventoryList[i].DisplayOrder = i;
+        }
+
+        // Save the new order to the database asynchronously
+        Task.Run(() => {
+            _repository.UpdateItemOrders(InventoryList.ToList());
+        });
     }
 
     [RelayCommand]
@@ -794,13 +814,13 @@ public partial class MainViewModel : ObservableObject {
                 logoCell.GetRichText().AddText("ISMS").SetFontColor(XLColor.Red).SetBold().SetFontSize(16);
                 logoCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                var deptCell = invSheet.Cell("E1");
+                var deptCell = invSheet.Cell("D1");
                 deptCell.Value = "INFORMATION SYSTEMS MANAGEMENT SERVICES";
                 deptCell.Style.Font.FontColor = XLColor.FromHtml("#1F497D");
                 deptCell.Style.Font.Bold = true;
                 deptCell.Style.Font.FontSize = 16;
 
-                var headerRange = invSheet.Range("A2:K2");
+                var headerRange = invSheet.Range("A2:J2");
                 headerRange.Merge();
                 headerRange.Value = $"SUPPLIES INVENTORY MONITORING as of {DateTime.Now:MMMM yyyy}";
                 headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#A9D08E");
@@ -813,14 +833,13 @@ public partial class MainViewModel : ObservableObject {
                 string[] invHeaders = {
                     "ITEM CODE",
                     "DESCRIPTION",
-                    "MANUFACTURER / SUPPLIER",
                     "AS OF",
                     "INITIAL STOCK",
                     "STOCK IN",
                     "STOCK OUT",
                     "FINAL STOCK",
                     "LOCATION",
-                    "REMARK'S",
+                    "REMARKS",
                     "STATUS"
                 };
                 for (int i = 0; i < invHeaders.Length; i++) {
@@ -842,17 +861,16 @@ public partial class MainViewModel : ObservableObject {
                     // --- CHANGED: Hides PENDING codes by outputting a blank string ---
                     invSheet.Cell(row, 1).Value = item.ItemCode != null && item.ItemCode.StartsWith("PENDING-") ? "" : item.ItemCode;
                     invSheet.Cell(row, 2).Value = item.Description;
-                    invSheet.Cell(row, 3).Value = item.ManufacturerSupplier;
-                    invSheet.Cell(row, 4).Value = item.AsOfDate;
-                    invSheet.Cell(row, 5).Value = item.InitialStock;
-                    invSheet.Cell(row, 6).Value = item.Stock_In;
-                    invSheet.Cell(row, 7).Value = item.Stock_Out;
-                    invSheet.Cell(row, 8).Value = item.Final_Stock;
-                    invSheet.Cell(row, 9).Value = item.Location;
-                    invSheet.Cell(row, 10).Value = item.Remarks;
-                    invSheet.Cell(row, 11).Value = item.Status;
+                    invSheet.Cell(row, 3).Value = item.AsOfDate;
+                    invSheet.Cell(row, 4).Value = item.InitialStock;
+                    invSheet.Cell(row, 5).Value = item.Stock_In;
+                    invSheet.Cell(row, 6).Value = item.Stock_Out;
+                    invSheet.Cell(row, 7).Value = item.Final_Stock;
+                    invSheet.Cell(row, 8).Value = item.Location;
+                    invSheet.Cell(row, 9).Value = item.Remarks;
+                    invSheet.Cell(row, 10).Value = item.Status;
 
-                    var rowRange = invSheet.Range(row, 1, row, 11);
+                    var rowRange = invSheet.Range(row, 1, row, 10);
                     if (i % 2 == 0) rowRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#E9EEF4");
 
                     rowRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
@@ -868,7 +886,7 @@ public partial class MainViewModel : ObservableObject {
                     }
                 }
                 invSheet.Columns().AdjustToContents();
-                invSheet.Column(5).Width = 13;
+                invSheet.Column(4).Width = 13;
 
                 // ==========================================
                 // 2. FORMAT TRANSACTION LOG SHEETS
@@ -1011,7 +1029,6 @@ public partial class MainViewModel : ObservableObject {
                     foreach(var row in rows) {
                         var excelItemCode = row.Cell(1).GetString();
                         var excelDesc = row.Cell(2).GetString();
-                        var excelMfg = row.Cell(3).GetString();
 
                         // Skip completely blank rows
                         if (string.IsNullOrWhiteSpace(excelItemCode) && string.IsNullOrWhiteSpace(excelDesc)) continue;
@@ -1020,11 +1037,8 @@ public partial class MainViewModel : ObservableObject {
                         var existingItem = _fullInventoryList.FirstOrDefault(i => 
                             !string.IsNullOrWhiteSpace(excelItemCode) && i.ItemCode == excelItemCode);
 
-                        // MATCHING LOGIC STEP 2: If no code match, try Description + Manufacturer match
                         if (existingItem == null && !string.IsNullOrWhiteSpace(excelDesc)) {
-                            existingItem = _fullInventoryList.FirstOrDefault(i => 
-                                i.Description == excelDesc && 
-                                i.ManufacturerSupplier == excelMfg);
+                            existingItem = _fullInventoryList.FirstOrDefault(i => i.Description == excelDesc);
                         }
 
                         string finalItemCode = excelItemCode;
@@ -1052,15 +1066,14 @@ public partial class MainViewModel : ObservableObject {
                         var item = new InventoryItem {
                             ItemCode = finalItemCode,
                             Description = excelDesc,
-                            ManufacturerSupplier = excelMfg,
-                            AsOfDate = row.Cell(4).GetString(),
-                            InitialStock = row.Cell(5).TryGetValue<int>(out int initial) ? initial : 0,
-                            Stock_In = row.Cell(6).TryGetValue<int>(out int inStock) ? inStock : 0,
-                            Stock_Out = row.Cell(7).TryGetValue<int>(out int outStock) ? outStock : 0,
-                            Final_Stock = row.Cell(8).TryGetValue<int>(out int final) ? final : 0,
-                            Location = row.Cell(9).GetString(),
-                            Remarks = row.Cell(10).GetString(),
-                            Status = row.Cell(11).GetString()
+                            AsOfDate = row.Cell(3).GetString(),
+                            InitialStock = row.Cell(4).TryGetValue<int>(out int initial) ? initial : 0,
+                            Stock_In = row.Cell(5).TryGetValue<int>(out int inStock) ? inStock : 0,
+                            Stock_Out = row.Cell(6).TryGetValue<int>(out int outStock) ? outStock : 0,
+                            Final_Stock = row.Cell(7).TryGetValue<int>(out int final) ? final : 0,
+                            Location = row.Cell(8).GetString(),
+                            Remarks = row.Cell(9).GetString(),
+                            Status = row.Cell(10).GetString()
                         };
                         exactExcelItems.Add(item);
 

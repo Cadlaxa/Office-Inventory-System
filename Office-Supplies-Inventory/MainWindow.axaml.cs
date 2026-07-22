@@ -5,6 +5,7 @@ using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using System;
 using System.Threading.Tasks;
 using System.Collections;
@@ -28,14 +29,19 @@ public partial class MainWindow: Window {
     public readonly string _settingsPath = "settings.json";
     private AppSettings _currentSettings = new(); // Holds all active settings
     private SparkleUpdater _sparkle;
+    private InventoryItem _cutItem;
     public MainWindow() {
 
         InitializeComponent();
         LoadSettings();
+        InventoryGrid.AddHandler(PointerPressedEvent, InventoryGrid_PointerPressed, RoutingStrategies.Tunnel);
+        InventoryGrid.AddHandler(PointerMovedEvent, InventoryGrid_PointerMoved, RoutingStrategies.Tunnel);
+
         AddHandler(DragDrop.DragEnterEvent, Window_DragEnter);
         AddHandler(DragDrop.DragLeaveEvent, Window_DragLeave);
         AddHandler(DragDrop.DragOverEvent, Window_DragOver);
         AddHandler(DragDrop.DropEvent, Window_Drop);
+        
         var viewModel = new MainViewModel();
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         DataContext = viewModel;
@@ -131,9 +137,16 @@ public partial class MainWindow: Window {
     }
 
     private void Window_DragOver(object? sender, DragEventArgs e) {
+        // 1. Allow Excel File imports
         if (e.Data.Contains(Avalonia.Input.DataFormats.Files)) {
             e.DragEffects = DragDropEffects.Copy;
-        } else {
+        } 
+        // 2. NEW: Explicitly allow our custom DataGrid rows to be dragged!
+        else if (e.Data.Contains("DraggedInventoryItem")) {
+            e.DragEffects = DragDropEffects.Move; 
+        } 
+        // 3. Block anything else
+        else {
             e.DragEffects = DragDropEffects.None;
         }
     }
@@ -416,6 +429,131 @@ public partial class MainWindow: Window {
                     vm.CloseDeleteLogDialogCommand.Execute(null);
                 }
             }
+        }
+    }
+
+    private Point _dragStartPoint;
+    private InventoryItem _draggedItem;
+    private bool _isDragging = false;
+
+    // Attach this event to your DataGrid in XAML: PointerPressed="InventoryGrid_PointerPressed"
+    private void InventoryGrid_PointerPressed(object? sender, PointerPressedEventArgs e) {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        var visual = e.Source as Avalonia.Controls.Control;
+        var row = visual as DataGridRow ?? visual?.GetVisualAncestors().OfType<DataGridRow>().FirstOrDefault();
+        
+        if (row != null) {
+            _dragStartPoint = e.GetPosition(null);
+            _draggedItem = row.DataContext as InventoryItem;
+            _isDragging = _draggedItem != null;
+        }
+    }
+
+    private async void InventoryGrid_PointerMoved(object? sender, PointerEventArgs e) {
+        if (!_isDragging || _draggedItem == null || sender is not DataGrid grid) return;
+        Vector diff = e.GetPosition(null) - _dragStartPoint;
+        if (Math.Abs(diff.X) > 4 || Math.Abs(diff.Y) > 4) {
+            _isDragging = false; 
+            var dragData = new DataObject();
+            dragData.Set("DraggedInventoryItem", _draggedItem);
+            await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Move);
+        }
+    }
+
+    private void InventoryGrid_Drop(object? sender, DragEventArgs e) {
+        if (sender is DataGrid grid && e.Data.Contains("DraggedInventoryItem")) {
+            var sourceItem = e.Data.Get("DraggedInventoryItem") as InventoryItem;
+            var visual = e.Source as Avalonia.Controls.Control;
+            
+            // Check if the visual IS the DataGridRow, OR if it's inside one (like a TextBlock)
+            var targetRow = visual as DataGridRow ?? visual?.GetVisualAncestors().OfType<DataGridRow>().FirstOrDefault();
+            var targetItem = targetRow?.DataContext as InventoryItem;
+
+            if (sourceItem != null && targetItem != null && sourceItem != targetItem && DataContext is MainViewModel vm) {
+                int oldIndex = vm.InventoryList.IndexOf(sourceItem);
+                int newIndex = vm.InventoryList.IndexOf(targetItem);
+                
+                vm.ReorderItemsCommand.Execute(new Tuple<int, int>(oldIndex, newIndex));
+            }
+        }
+        _draggedItem = null;
+        _isDragging = false;
+    }
+
+    private int _sortClickCount = 0;
+    private DataGridColumn _lastSortedColumn = null;
+
+    private void InventoryGrid_Sorting(object? sender, DataGridColumnEventArgs e) {
+        // 1. If they clicked a brand new column, reset the counter to 1
+        if (_lastSortedColumn != e.Column) {
+            _sortClickCount = 1;
+            _lastSortedColumn = e.Column;
+            return;
+        }
+        _sortClickCount++;
+        if (_sortClickCount == 3) {
+            
+            e.Handled = true;     // Stop Avalonia from looping back to Ascending
+            e.Column.ClearSort(); // Remove the visual sort arrow from the column header
+            
+            // Drop the internal sorting layer by briefly refreshing the connection to your ViewModel
+            if (DataContext is MainViewModel vm) {
+                InventoryGrid.ItemsSource = null;
+                InventoryGrid.ItemsSource = vm.InventoryList;
+            }
+            _sortClickCount = 0;
+            _lastSortedColumn = null;
+        }
+    }
+
+    private void DeleteEntryMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        if (this.DataContext is MainViewModel viewModel) {
+            // Reuses the global delete logic that handles dialogs and selected items perfectly
+            viewModel.HandleGlobalDeleteCommand.Execute(null);
+        }
+    }
+
+    private void StockInMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        if (this.DataContext is MainViewModel viewModel && InventoryGrid.SelectedItem != null) {
+            viewModel.OpenStockInDialogCommand.Execute(null);
+        }
+    }
+
+    private void StockOutMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        if (this.DataContext is MainViewModel viewModel && InventoryGrid.SelectedItem != null) {
+            viewModel.OpenStockOutDialogCommand.Execute(null);
+        }
+    }
+
+    private void CutEntryMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        if (InventoryGrid.SelectedItem is InventoryItem item && DataContext is MainViewModel vm) {
+            // Save the item to memory
+            _cutItem = item;
+            
+            // Enable the paste button
+            if (PasteMenuItem != null) PasteMenuItem.IsEnabled = true;
+
+            vm.ShowSelectionNotification($"Cut: {item.ItemCode}. Select another row and Paste.");
+        }
+    }
+
+    private void PasteEntryMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+        // Ensure we actually cut an item, clicked a target to replace, and are bound to the ViewModel
+        if (_cutItem != null && InventoryGrid.SelectedItem is InventoryItem targetItem && DataContext is MainViewModel vm) {
+            
+            // Look up the exact index of both items in real-time
+            int oldIndex = vm.InventoryList.IndexOf(_cutItem);
+            int newIndex = vm.InventoryList.IndexOf(targetItem);
+
+            if (oldIndex != -1 && newIndex != -1 && oldIndex != newIndex) {
+                // Fire the exact same Reorder command we built for the Drag and Drop!
+                vm.ReorderItemsCommand.Execute(new Tuple<int, int>(oldIndex, newIndex));
+                vm.ShowSelectionNotification("Row pasted and successfully reordered.");
+            }
+
+            // Clear the clipboard and disable the Paste button
+            _cutItem = null;
+            if (PasteMenuItem != null) PasteMenuItem.IsEnabled = false;
         }
     }
 }

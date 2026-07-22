@@ -18,7 +18,6 @@ namespace Office_Supplies_Inventory {
             }
         }
         public string Description { get; set; } = string.Empty;
-        public string ManufacturerSupplier { get; set; } = string.Empty;
         public string AsOfDate { get; set; } = string.Empty;
         private int _initialStock;
         public int InitialStock { 
@@ -61,6 +60,7 @@ namespace Office_Supplies_Inventory {
         public string Location { get; set; } = string.Empty;
         public string Remarks { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public int DisplayOrder { get; set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName) =>
