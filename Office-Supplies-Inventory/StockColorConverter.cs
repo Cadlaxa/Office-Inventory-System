@@ -26,8 +26,8 @@ namespace Office_Supplies_Inventory {
 
                 double calculatedPercentage = ((initialStock + stockIn - stockOut) / totalBasePool) * 100;
 
-                // Drop opacity to 20% if it's a row highlight so text stays readable
-                double opacity = isRow ? 0.20 : 1.0;
+                // Drop opacity to 15% if it's a row highlight so text stays readable
+                double opacity = isRow ? 0.15 : 1.0;
 
                 if (calculatedPercentage <= 10)
                     return new SolidColorBrush(Color.Parse("#DC3545")) {

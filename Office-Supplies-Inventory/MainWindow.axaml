@@ -565,11 +565,12 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn SortMemberPath="Description" Header="DESCRIPTION" MaxWidth="500">
+                                <DataGridTemplateColumn SortMemberPath="Description" Header="DESCRIPTION" MaxWidth="600">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Description}" 
                                                     TextTrimming="CharacterEllipsis" 
+                                                    TextWrapping="Wrap"
                                                     VerticalAlignment="Center" 
                                                     Margin="12,0"
                                                     ToolTip.Tip="{Binding Description}"
@@ -900,19 +901,19 @@
 
                     <Border Grid.Row="1" Classes="MaterialCard" Padding="0" ClipToBounds="True">
                         <DataGrid x:Name="TransactionLogGrid"
-                                  ItemsSource="{Binding TransactionLogs}"
-                                  SelectedItem="{Binding SelectedLog}"
-                                  SelectionChanged="DataGrid_SelectionChanged"
-                                  SelectionMode="Extended"
-                                  AutoGenerateColumns="False" 
-                                  IsReadOnly="False" 
-                                  CellEditEnded="TransactionLogGrid_CellEditEnded"
-                                  x:CompileBindings="False" 
-                                  CanUserSortColumns="True" 
-                                  CanUserResizeColumns="True"
-                                  GridLinesVisibility="Horizontal"
-                                  BorderThickness="0"
-                                  Background="Transparent">
+                                ItemsSource="{Binding TransactionLogs}"
+                                SelectedItem="{Binding SelectedLog}"
+                                SelectionChanged="DataGrid_SelectionChanged"
+                                SelectionMode="Extended"
+                                AutoGenerateColumns="False" 
+                                IsReadOnly="True" 
+                                x:CompileBindings="False" 
+                                CanUserSortColumns="True" 
+                                CanUserResizeColumns="True"
+                                GridLinesVisibility="Horizontal"
+                                BorderThickness="0"
+                                Background="Transparent"
+                                DoubleTapped="TransactionLogGrid_DoubleTapped">
                             
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
@@ -921,6 +922,13 @@
                                             <TextBlock Text="❌" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Edit Log Entry" Click="EditLogMenuItem_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="✏️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
                                     <MenuItem Header="Go to Item" Click="GotoItemMenuItem_Click">
                                         <MenuItem.Icon>
                                             <TextBlock Text="➡️" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -1007,11 +1015,12 @@
                                     </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn SortMemberPath="ItemDescription" Header="ITEM DESCRIPTION" Width="*">
+                                <DataGridTemplateColumn SortMemberPath="ItemDescription" Header="ITEM DESCRIPTION" MaxWidth="600">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ItemDescription}" 
                                                     TextTrimming="CharacterEllipsis" 
+                                                    TextWrapping="Wrap"
                                                     ToolTip.Tip="{Binding ItemDescription}"
                                                     ToolTip.ShowDelay="300"
                                                     VerticalAlignment="Center" 
@@ -1200,7 +1209,7 @@
 
         <!-- Edit Item Dialog -->
         <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsEditDialogVisible}">
-            <Border Classes="MaterialCard" Width="520" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
+            <Border Classes="MaterialCard" Width="550" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
                     <StackPanel Spacing="12" Margin="4">
                         <TextBlock Text="{Binding EditItemForm.ItemCode, StringFormat='Editing: {0}'}" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
@@ -1260,6 +1269,51 @@
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Edit Transaction Log Dialog -->
+        <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsEditLogDialogVisible}">
+            <Border Classes="MaterialCard" Width="480" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Edit Transaction Log" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
+                    
+                    <!-- Read-only Banner for Item Code -->
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Item Code:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding EditLogForm.ItemCode}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*, *" Margin="0,5,0,0">
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Date:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBox Text="{Binding EditLogForm.Date}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Type (IN/OUT):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBox Text="{Binding EditLogForm.TransactionType}" Watermark="e.g., IN or OUT"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Requester / Supplier Name:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBox Text="{Binding EditLogForm.NameRequested}"/>
+                    
+                    <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBox Text="{Binding EditLogForm.ItemDescription}" MinLines="3" AcceptsReturn="True" TextWrapping="Wrap"/>
+                    
+                    <TextBlock Text="Quantity:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBox Text="{Binding EditLogForm.Quantity}"/>
+
+                    <TextBlock Text="Remarks:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBox Text="{Binding EditLogForm.Remarks}"/>
+
+                    <Grid ColumnDefinitions="*, *" Margin="0,20,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Classes="MaterialBtn Secondary" Command="{Binding CloseEditLogDialogCommand}" Margin="0,0,8,0"/>
+                        <Button Grid.Column="1" Content="💾 Save Changes" Classes="MaterialBtn Primary" Command="{Binding SaveEditedLogCommand}" Margin="8,0,0,0"/>
+                    </Grid>
+                </StackPanel>
             </Border>
         </Grid>
 
@@ -1343,14 +1397,14 @@
 
         <!-- Stock Out Dialog -->
         <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsStockOutDialogVisible}">
-            <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
+            <Border Classes="MaterialCard" Width="550" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Log Supply Request (Out)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                     <TextBlock Text="Item (Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <ComboBox ItemsSource="{Binding AllInventoryItems}" 
-                            SelectedValue="{Binding StockOutForm.ItemCode}" 
-                            SelectedValueBinding="{Binding ItemCode}"
-                            HorizontalAlignment="Stretch" CornerRadius="12">
+                            SelectedValue="{Binding SelectedStockOutItem}"
+                            HorizontalAlignment="Stretch" CornerRadius="12"
+                            IsTextSearchEnabled="True">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding ItemCode}" />
@@ -1359,7 +1413,20 @@
                     </ComboBox>
 
                     <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockOutForm.ItemDescription}" Watermark="Description..." Classes="MaterialTextBox" MinLines="5" AcceptsReturn="True" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding AllInventoryItems}" 
+                            SelectedItem="{Binding SelectedStockOutItem}" 
+                            HorizontalAlignment="Stretch" 
+                            CornerRadius="12" 
+                            PlaceholderText="Select Description..."
+                            MinHeight="100"
+                            VerticalContentAlignment="Top"
+                            IsTextSearchEnabled="True">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     
                     <TextBlock Text="Employee Name:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockOutForm.NameRequested}" x:Name="StockOutComboBox" Watermark="e.g., Juan Dela Cruz"/>
@@ -1380,14 +1447,14 @@
 
         <!-- Stock In Dialog -->
         <Grid Grid.RowSpan="2" Classes="DialogBackdrop" Classes.show="{Binding IsStockInDialogVisible}">
-            <Border Classes="MaterialCard" Width="420" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
+            <Border Classes="MaterialCard" Width="550" CornerRadius="24" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 12 32 0 #40000000">
                 <StackPanel Spacing="12">
                     <TextBlock Text="Add Delivery (Stock In)" FontWeight="Bold" FontSize="22" Margin="0,0,0,10"/>
                     <TextBlock Text="Select Item (Code):" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <ComboBox ItemsSource="{Binding AllInventoryItems}" 
-                            SelectedValue="{Binding StockInForm.ItemCode}" 
-                            SelectedValueBinding="{Binding ItemCode}"
-                            HorizontalAlignment="Stretch" CornerRadius="12">
+                            SelectedValue="{Binding SelectedStockInItem}" 
+                            HorizontalAlignment="Stretch" CornerRadius="12"
+                            IsTextSearchEnabled="True">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding ItemCode}" />
@@ -1396,7 +1463,20 @@
                     </ComboBox>
 
                     <TextBlock Text="Item Description:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-                    <TextBox Text="{Binding StockInForm.ItemDescription}" Watermark="Description..." Classes="MaterialTextBox" MinLines="5" AcceptsReturn="True" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding AllInventoryItems}" 
+                            SelectedItem="{Binding SelectedStockInItem}" 
+                            HorizontalAlignment="Stretch" 
+                            CornerRadius="12" 
+                            PlaceholderText="Select Description..."
+                            MinHeight="100"
+                            VerticalContentAlignment="Top"
+                            IsTextSearchEnabled="True">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Text="Supplier/Source:" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                     <TextBox Text="{Binding StockInForm.NameRequested}" x:Name="StockInComboBox" Watermark="e.g., Office Depot"/>

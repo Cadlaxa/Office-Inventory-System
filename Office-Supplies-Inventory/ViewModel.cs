@@ -496,6 +496,26 @@ public partial class MainViewModel : ObservableObject {
         ShowNotification($"{itemsToDelete.Count} item(s) deleted.");
     }
 
+    [ObservableProperty]
+    private InventoryItem _selectedStockOutItem;
+
+    partial void OnSelectedStockOutItemChanged(InventoryItem value) {
+        if (value != null && StockOutForm != null) {
+            StockOutForm.ItemCode = value.ItemCode;
+            StockOutForm.ItemDescription = value.Description;
+        }
+    }
+
+    [ObservableProperty]
+    private InventoryItem _selectedStockInItem;
+
+    partial void OnSelectedStockInItemChanged(InventoryItem value) {
+        if (value != null && StockInForm != null) {
+            StockInForm.ItemCode = value.ItemCode;
+            StockInForm.ItemDescription = value.Description;
+        }
+    }
+
     // --- STOCK OUT LOGIC ---
 
     [RelayCommand]
@@ -519,6 +539,7 @@ public partial class MainViewModel : ObservableObject {
             Quantity = 1,
             Remarks = string.Empty
         };
+        SelectedStockOutItem = AllInventoryItems.FirstOrDefault(i => i.ItemCode == SelectedItem?.ItemCode);
         IsStockOutDialogVisible = true;
     }
 
@@ -583,6 +604,7 @@ public partial class MainViewModel : ObservableObject {
             Quantity = 1,
             Remarks = string.Empty
         };
+        SelectedStockInItem = AllInventoryItems.FirstOrDefault(i => i.ItemCode == SelectedItem?.ItemCode);
         IsStockInDialogVisible = true;
     }
 
@@ -750,6 +772,50 @@ public partial class MainViewModel : ObservableObject {
         return null;
     }
 
+    [ObservableProperty]
+    private bool _isEditLogDialogVisible;
+
+    [ObservableProperty]
+    private StockTransactionLog _editLogForm = new();
+
+    public void OpenEditLogDialog() {
+        if (SelectedLog == null) return; 
+
+        // Copy data to temporary form
+        EditLogForm = new StockTransactionLog {
+            TransactionId = SelectedLog.TransactionId,
+            Date = SelectedLog.Date,
+            NameRequested = SelectedLog.NameRequested,
+            ItemDescription = SelectedLog.ItemDescription,
+            Quantity = SelectedLog.Quantity,
+            TransactionType = SelectedLog.TransactionType,
+            ItemCode = SelectedLog.ItemCode,
+            Remarks = SelectedLog.Remarks
+        };
+
+        IsEditLogDialogVisible = true;
+    }
+
+    [RelayCommand]
+    private void CloseEditLogDialog() => IsEditLogDialogVisible = false;
+
+    [RelayCommand]
+    private void SaveEditedLog() {
+        if (!int.TryParse(EditLogForm.Quantity.ToString(), out int parsedQuantity) || parsedQuantity < 0) {
+            ShowNotification("Error: Quantity must be a valid positive number.", true);
+            return;
+        }
+
+        try {
+            _repository.UpdateTransactionLog(EditLogForm);
+            LoadData(); // Refreshes both logs and the calculated inventory totals!
+            IsEditLogDialogVisible = false;
+            ShowNotification("Transaction log successfully updated.");
+        } catch {
+            ShowNotification("Error: Could not update log.", true);
+        }
+    }
+
     // --- EXPORT TO EXCEL ---
     [ObservableProperty]
     private bool _isExportCompleteDialogVisible;
@@ -888,6 +954,12 @@ public partial class MainViewModel : ObservableObject {
                 invSheet.Columns().AdjustToContents();
                 invSheet.Column(4).Width = 13;
 
+                invSheet.Column(2).Width = 30; // Column 2 is DESCRIPTION
+                invSheet.Column(2).Style.Alignment.WrapText = true;
+
+                invSheet.Column(9).Width = 20; // Column 9 is REMARKS
+                invSheet.Column(9).Style.Alignment.WrapText = true;
+
                 // ==========================================
                 // 2. FORMAT TRANSACTION LOG SHEETS
                 // ==========================================
@@ -968,6 +1040,11 @@ public partial class MainViewModel : ObservableObject {
                     }
                     logSheet.Columns().AdjustToContents();
                     logSheet.Column(4).Width = 10;
+                    logSheet.Column(3).Width = 30; // Column 3 is DESCRIPTION
+                    logSheet.Column(3).Style.Alignment.WrapText = true;
+
+                    logSheet.Column(7).Width = 20; // Column 7 is REMARKS
+                    logSheet.Column(7).Style.Alignment.WrapText = true;
                 }
 
                 workbook.SaveAs(filePath);

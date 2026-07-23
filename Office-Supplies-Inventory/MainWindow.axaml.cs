@@ -287,13 +287,17 @@ public partial class MainWindow: Window {
         }
     }
 
-    private void TransactionLogGrid_CellEditEnded(object ? sender, DataGridCellEditEndedEventArgs e) {
-        if (e.EditAction == DataGridEditAction.Commit) {
-            var editedLog = e.Row.DataContext as StockTransactionLog;
-            if (editedLog != null && DataContext is MainViewModel vm) {
-                vm.UpdateTransactionLogInDatabase(editedLog);
-            }
+    private void TransactionLogGrid_DoubleTapped(object? sender, TappedEventArgs e) {
+        if (DataContext is MainViewModel viewModel && TransactionLogGrid.SelectedItem != null) {
+            viewModel.OpenEditLogDialog();
+            e.Handled = true; 
         }
+    }
+
+    private void EditLogMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+       if (this.DataContext is MainViewModel viewModel && TransactionLogGrid.SelectedItem != null) {
+           viewModel.OpenEditLogDialog();
+       }
     }
 
     private void ThemeToggle_Toggled(object? sender, RoutedEventArgs e) {
@@ -428,6 +432,9 @@ public partial class MainWindow: Window {
                 else if (vm.IsExportCompleteDialogVisible) {
                     vm.CloseDeleteLogDialogCommand.Execute(null);
                 }
+                else if (vm.IsEditLogDialogVisible) {
+                    vm.CloseEditLogDialogCommand.Execute(null);
+                }
             }
         }
     }
@@ -436,7 +443,6 @@ public partial class MainWindow: Window {
     private InventoryItem _draggedItem;
     private bool _isDragging = false;
 
-    // Attach this event to your DataGrid in XAML: PointerPressed="InventoryGrid_PointerPressed"
     private void InventoryGrid_PointerPressed(object? sender, PointerPressedEventArgs e) {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         var visual = e.Source as Avalonia.Controls.Control;
@@ -446,6 +452,10 @@ public partial class MainWindow: Window {
             _dragStartPoint = e.GetPosition(null);
             _draggedItem = row.DataContext as InventoryItem;
             _isDragging = _draggedItem != null;
+
+            if (_draggedItem != null && InventoryGrid.SelectedItem != _draggedItem) {
+                InventoryGrid.SelectedItem = _draggedItem;
+            }
         }
     }
 
@@ -475,6 +485,7 @@ public partial class MainWindow: Window {
                 
                 vm.ReorderItemsCommand.Execute(new Tuple<int, int>(oldIndex, newIndex));
             }
+            grid.SelectedItem = sourceItem;
         }
         _draggedItem = null;
         _isDragging = false;
@@ -529,7 +540,6 @@ public partial class MainWindow: Window {
         if (InventoryGrid.SelectedItem is InventoryItem item && DataContext is MainViewModel vm) {
             // Save the item to memory
             _cutItem = item;
-            
             // Enable the paste button
             if (PasteMenuItem != null) PasteMenuItem.IsEnabled = true;
 
@@ -538,20 +548,14 @@ public partial class MainWindow: Window {
     }
 
     private void PasteEntryMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-        // Ensure we actually cut an item, clicked a target to replace, and are bound to the ViewModel
         if (_cutItem != null && InventoryGrid.SelectedItem is InventoryItem targetItem && DataContext is MainViewModel vm) {
-            
-            // Look up the exact index of both items in real-time
             int oldIndex = vm.InventoryList.IndexOf(_cutItem);
             int newIndex = vm.InventoryList.IndexOf(targetItem);
-
             if (oldIndex != -1 && newIndex != -1 && oldIndex != newIndex) {
                 // Fire the exact same Reorder command we built for the Drag and Drop!
                 vm.ReorderItemsCommand.Execute(new Tuple<int, int>(oldIndex, newIndex));
                 vm.ShowSelectionNotification("Row pasted and successfully reordered.");
             }
-
-            // Clear the clipboard and disable the Paste button
             _cutItem = null;
             if (PasteMenuItem != null) PasteMenuItem.IsEnabled = false;
         }
